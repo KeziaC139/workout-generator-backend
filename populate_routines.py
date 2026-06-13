@@ -123,9 +123,9 @@ def populate_large_dataset():
             "*Rest 2 full minutes at the end of each round.*"
         ),
 
-        # --- STRONGMAN ROUTINES ---
+        # --- POWERLIFTER ROUTINES ---
         (
-            "strongman",
+            "powerlifter",
             equipment_mapping["full_gym"],
             4,
             90,
@@ -151,7 +151,7 @@ def populate_large_dataset():
             "* Plank Holds with plate on back: 3 sets x 60 seconds"
         ),
         (
-            "strongman",
+            "powerlifter",
             equipment_mapping["dumbbells_only"],
             3,
             60,
