@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <h1>Construct Your Physique</h1>
+        <p class="subtitle">Answer a few questions to generate your custom program.</p>
+
+        <div id="step-1" class="step-section active">
+            <h2>Select Your Target Physique</h2>
+            <div class="grid-3">
+                <button class="card-btn" onclick="selectPhysique('bodybuilder')">
+                    <span class="emoji">💪</span>
+                    <h3>Bodybuilder</h3>
+                    <p>Focus on maximum muscle size and symmetry.</p>
+                </button>
+                <button class="card-btn" onclick="selectPhysique('athlete')">
+                    <span class="emoji">⚡</span>
+                    <h3>Athlete</h3>
+                    <p>Focus on explosive power, speed, and agility.</p>
+                </button>
+                <button class="card-btn" onclick="selectPhysique('strongman')">
+                    <span class="emoji">🐻</span>
+                    <h3>Strongman</h3>
+                    <p>Focus on raw, brutal strength and moving heavy objects.</p>
+                </button>
+            </div>
+        </div>
+
+        <div id="step-2" class="step-section">
+            <h2>What equipment do you have?</h2>
+            <div class="grid-3">
+                <button class="card-btn" onclick="selectEquipment('full_gym')">🏋️‍♂️ Full Gym</button>
+                <button class="card-btn" onclick="selectEquipment('dumbbells_only')"> dumbbells Dumbbells Only</button>
+                <button class="card-btn" onclick="selectEquipment('bodyweight_only')">🤸‍♂️ Bodyweight Only</button>
+            </div>
+        </div>
+
+        <div id="step-3" class="step-section">
+            <h2>Training Schedule & Duration</h2>
+
+            <div class="input-group">
+                <label for="days">How many days a week?</label>
+                <select id="days">
+                    <option value="3">3 Days</option>
+                    <option value="4">4 Days</option>
+                    <option value="5">5 Days</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label for="duration">Workout Duration</label>
+                <select id="duration">
+                    <option value="30">30 Minutes</option>
+                    <option value="60">60 Minutes</option>
+                    <option value="90">90 Minutes</option>
+                </select>
+            </div>
+
+            <button class="submit-btn" onclick="generateWorkout()">Generate Program ✨</button>
+        </div>
+
+        <div id="step-4" class="step-section">
+            <h2>Your Custom Program</h2>
+            <div id="workout-result" class="result-box">
+                </div>
+            <button class="reset-btn" onclick="resetApp()">Start Over 🔄</button>
+        </div>
+
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

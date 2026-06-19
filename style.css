@@ -1,0 +1,109 @@
+:root {
+    --bg-color: #121214;
+    --card-bg: #1a1a1e;
+    --accent-color: #00ff87;
+    --text-color: #ffffff;
+    --text-secondary: #a0a0a5;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 40px 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.app-container {
+    max-width: 800px;
+    width: 100%;
+    text-align: center;
+}
+
+h1 { font-size: 2.5rem; margin-bottom: 5px; }
+.subtitle { color: var(--text-secondary); margin-bottom: 40px; }
+
+/* Multi-step screen toggling */
+.step-section {
+    display: none; /* Hide screens by default */
+    animation: fadeIn 0.4s ease-in-out forwards;
+}
+
+.step-section.active {
+    display: block; /* Show active screen */
+}
+
+/* 3-Column Card Layout */
+.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-top: 35px;
+}
+
+.card-btn {
+    background-color: var(--card-bg);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 30px 20px;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.card-btn:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent-color);
+    box-shadow: 0 10px 20px rgba(0, 255, 135, 0.1);
+}
+
+.emoji { font-size: 2.5rem; display: block; margin-bottom: 10px; }
+
+/* Inputs and Forms */
+.input-group {
+    margin: 25px auto;
+    max-width: 300px;
+    text-align: left;
+}
+
+label { display: block; margin-bottom: 8px; color: var(--text-secondary); }
+select {
+    width: 100%;
+    padding: 12px;
+    background: var(--card-bg);
+    color: white;
+    border: 1px solid #333;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+/* Action Buttons */
+.submit-btn, .reset-btn {
+    background: linear-gradient(135deg, #00ff87 0%, #60efff 100%);
+    color: #000;
+    font-weight: bold;
+    border: none;
+    padding: 15px 40px;
+    font-size: 1.1rem;
+    border-radius: 30px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.result-box {
+    background-color: var(--card-bg);
+    border-left: 4px solid var(--accent-color);
+    padding: 25px;
+    border-radius: 8px;
+    text-align: left;
+    white-space: pre-wrap; /* Keeps line breaks from database */
+    margin: 30px 0;
+    line-height: 1.6;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
