@@ -1,3 +1,4 @@
+/* --- UNIVERSAL DESIGN TOKENS --- */
 :root {
     --bg-color: #121214;
     --card-bg: #1a1a1e;
@@ -22,20 +23,27 @@ body {
     text-align: center;
 }
 
-h1 { font-size: 2.5rem; margin-bottom: 5px; }
-.subtitle { color: var(--text-secondary); margin-bottom: 40px; }
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 5px;
+}
 
-/* Multi-step screen toggling */
+.subtitle {
+    color: var(--text-secondary);
+    margin-bottom: 40px;
+}
+
+/* --- MULTI-STEP WIZARD SCREENS --- */
 .step-section {
-    display: none; /* Hide screens by default */
+    display: none; /* Hidden by default */
     animation: fadeIn 0.4s ease-in-out forwards;
 }
 
 .step-section.active {
-    display: block; /* Show active screen */
+    display: block; /* Displayed when assigned by JavaScript */
 }
 
-/* 3-Column Card Layout */
+/* --- GRID CARDS (STEPS 1 & 2) --- */
 .grid-3 {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -50,7 +58,8 @@ h1 { font-size: 2.5rem; margin-bottom: 5px; }
     padding: 30px 20px;
     color: var(--text-color);
     cursor: pointer;
-    transition: all 0.2s ease-in-out;
+    transition: all 0.25s ease-in-out;
+    text-align: center;
 }
 
 .card-btn:hover {
@@ -59,16 +68,25 @@ h1 { font-size: 2.5rem; margin-bottom: 5px; }
     box-shadow: 0 10px 20px rgba(0, 255, 135, 0.1);
 }
 
-.emoji { font-size: 2.5rem; display: block; margin-bottom: 10px; }
+.emoji {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 10px;
+}
 
-/* Inputs and Forms */
+/* --- DROP-DOWN FORM FIELDS (STEP 3) --- */
 .input-group {
     margin: 25px auto;
     max-width: 300px;
     text-align: left;
 }
 
-label { display: block; margin-bottom: 8px; color: var(--text-secondary); }
+label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+}
+
 select {
     width: 100%;
     padding: 12px;
@@ -79,30 +97,187 @@ select {
     font-size: 1rem;
 }
 
-/* Action Buttons */
-.submit-btn, .reset-btn {
+/* --- INTERACTIVE TRACKER DASHBOARD (STEP 4) --- */
+.exercise-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+    text-align: left;
+    border: 1px solid #2a2a30;
+}
+
+.exercise-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #2a2a30;
+    padding-bottom: 12px;
+    margin-bottom: 15px;
+}
+
+.exercise-header h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.tag {
+    background: #333;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    color: var(--accent-color);
+}
+
+.swap-select {
+    background: #121214;
+    color: var(--text-secondary);
+    border: 1px solid #333;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.swap-select:focus {
+    border-color: var(--accent-color);
+    outline: none;
+}
+
+.set-row {
+    display: grid;
+    grid-template-columns: 80px 1fr 1fr 50px;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.set-num {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.tracker-input {
+    background: #121214;
+    border: 1px solid #333;
+    color: white;
+    padding: 8px;
+    border-radius: 6px;
+    width: 80%;
+    font-size: 0.95rem;
+}
+
+.tracker-input:focus {
+    border-color: var(--accent-color);
+    outline: none;
+}
+
+/* --- CUSTOM INTERACTIVE CHECKBOXES --- */
+.check-container {
+    position: relative;
+    cursor: pointer;
+    display: block;
+    height: 24px;
+    width: 24px;
+}
+
+.check-container input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 24px;
+    width: 24px;
+    background-color: #2a2a30;
+    border-radius: 6px;
+    transition: 0.2s;
+}
+
+.check-container input:checked ~ .checkmark {
+    background-color: var(--accent-color);
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.check-container input:checked ~ .checkmark:after {
+    display: block;
+}
+
+.check-container .checkmark:after {
+    left: 9px;
+    top: 5px;
+    width: 5px;
+    height: 10px;
+    border: solid #000;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* --- OVERHAULED NEON ACTION BUTTONS --- */
+.action-row {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.submit-btn {
     background: linear-gradient(135deg, #00ff87 0%, #60efff 100%);
-    color: #000;
-    font-weight: bold;
+    color: #000000;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     border: none;
-    padding: 15px 40px;
-    font-size: 1.1rem;
+    padding: 16px 40px;
+    font-size: 1rem;
     border-radius: 30px;
     cursor: pointer;
-    margin-top: 20px;
+    margin-top: 25px;
+    transition: all 0.25s ease-in-out;
+    box-shadow: 0 4px 15px rgba(0, 255, 135, 0.2);
+    display: inline-block;
 }
 
-.result-box {
-    background-color: var(--card-bg);
-    border-left: 4px solid var(--accent-color);
-    padding: 25px;
-    border-radius: 8px;
-    text-align: left;
-    white-space: pre-wrap; /* Keeps line breaks from database */
-    margin: 30px 0;
-    line-height: 1.6;
+.submit-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 255, 135, 0.4);
+    opacity: 0.95;
 }
 
+.submit-btn:active {
+    transform: translateY(-1px);
+}
+
+.reset-btn {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 2px solid #333;
+    font-weight: 600;
+    padding: 14px 38px;
+    font-size: 1rem;
+    border-radius: 30px;
+    cursor: pointer;
+    margin-top: 25px;
+    transition: all 0.2s ease-in-out;
+}
+
+.reset-btn:hover {
+    border-color: #ff4a4a;
+    color: #ff4a4a;
+    background: rgba(255, 74, 74, 0.05);
+}
+
+/* --- ANIMATION FEEDBACK --- */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
