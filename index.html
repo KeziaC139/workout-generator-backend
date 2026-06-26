@@ -3,93 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fitness Tracker</title>
+    <title>Dynamic Fitness Path Architect</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Ensures containers stack down the page naturally */
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            margin: 0;
+            padding: 20px 0;
+            box-sizing: border-box;
+        }
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: 20px auto !important;
+            display: block !important;
+            clear: both;
+        }
+        header {
+            width: 90%;
+            max-width: 900px;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
-<body>
+<body onload="initializePage()">
 
-    <div class="app-container">
-        <h1>Construct Your Physique</h1>
-        <p class="subtitle">Answer a few questions to generate and track your custom program.</p>
+    <header>
+        <h1>Custom Fitness Path Architect</h1>
+        <p>Select your training matrix options to generate your personalized tracking grid.</p>
+    </header>
 
-        <div id="step-1" class="step-section active">
-            <h2>Select Your Target Physique</h2>
-            <div class="grid-3">
-                <button class="card-btn" onclick="selectPhysique('bodybuilder')">
-                    <span class="emoji">💪</span>
-                    <h3>Bodybuilder</h3>
-                    <p>Focus on maximum muscle size and symmetry.</p>
-                </button>
-                <button class="card-btn" onclick="selectPhysique('athlete')">
-                    <span class="emoji">⚡</span>
-                    <h3>Athlete</h3>
-                    <p>Focus on explosive power, speed, and agility.</p>
-                </button>
-                <button class="card-btn" onclick="selectPhysique('strongman')">
-                    <span class="emoji">🐻</span>
-                    <h3>Strongman</h3>
-                    <p>Focus on raw, brutal strength and moving heavy objects.</p>
-                </button>
-            </div>
+    <div class="container">
+        <h2>Step 1: Choose Your Physique Archetype</h2>
+        <div class="selection-grid">
+            <button class="card-btn" onclick="selectOption('physique', 'bodybuilder', this)">
+                <h3>Bodybuilder</h3>
+                <p>Maximize raw hypertrophy and muscular proportion metrics.</p>
+            </button>
+            <button class="card-btn" onclick="selectOption('physique', 'athlete', this)">
+                <h3>Athlete</h3>
+                <p>Optimize acceleration, reactive power, and functional balance.</p>
+            </button>
+            <button class="card-btn" onclick="selectOption('physique', 'strongman', this)">
+                <h3>Strongman</h3>
+                <p>Develop maximum absolute compound force and core stability.</p>
+            </button>
         </div>
+    </div>
 
-        <div id="step-2" class="step-section">
-            <h2>What equipment do you have?</h2>
-            <div class="grid-3">
-                <button class="card-btn" onclick="selectEquipment('full_gym')">
-                    <span class="emoji">🏋️‍♂️</span>
-                    <h3>Full Gym</h3>
-                    <p>Access to barbells, dumbbells, cables, and machines.</p>
-                </button>
-                <button class="card-btn" onclick="selectEquipment('dumbbells_only')">
-                    <span class="emoji">💪</span>
-                    <h3>Dumbbells Only</h3>
-                    <p>Perfect for a minimalist home gym setup.</p>
-                </button>
-                <button class="card-btn" onclick="selectEquipment('bodyweight_only')">
-                    <span class="emoji">🤸‍♂️</span>
-                    <h3>Bodyweight</h3>
-                    <p>No equipment required. Calisthenics focus.</p>
-                </button>
-            </div>
+    <div class="container">
+        <h2>Step 2: Define Environmental Availability</h2>
+        <div class="selection-grid">
+            <button class="card-btn" onclick="selectOption('equipment', 'Full Gym', this)">
+                <h3>Full Gym</h3>
+                <p>Unrestricted access to platforms, functional racks, and cable systems.</p>
+            </button>
+            <button class="card-btn" onclick="selectOption('equipment', 'Dumbbells Only', this)">
+                <h3>Dumbbells Only</h3>
+                <p>Modified home tracking using purely unilateral training movements.</p>
+            </button>
+            <button class="card-btn" onclick="selectOption('equipment', 'Bodyweight Only', this)">
+                <h3>Bodyweight Only</h3>
+                <p>Pure mechanical resistance using body weight mechanics.</p>
+            </button>
         </div>
+    </div>
 
-        <div id="step-3" class="step-section">
-            <h2>Training Schedule & Duration</h2>
-
-            <div class="input-group">
-                <label for="days">How many days a week?</label>
-                <select id="days">
-                    <option value="3">3 Days</option>
-                    <option value="4" selected>4 Days</option>
-                    <option value="5">5 Days</option>
+    <div class="container">
+        <h2>Step 3: Temporal Commitments</h2>
+        <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px;">
+            <div style="flex: 1; min-width: 200px;">
+                <label for="input-days" style="display:block; margin-bottom:8px; font-weight:600;">Weekly Target (Days):</label>
+                <select id="input-days" style="width:100%; padding:12px; background:#1e1e1e; color:#fff; border:1px solid #333; border-radius:6px;">
+                    <option value="3">3 Days Per Week</option>
+                    <option value="4" selected>4 Days Per Week</option>
+                    <option value="5">5 Days Per Week</option>
                 </select>
             </div>
-
-            <div class="input-group">
-                <label for="duration">Workout Duration</label>
-                <select id="duration">
-                    <option value="30">30 Minutes</option>
-                    <option value="60" selected>60 Minutes</option>
-                    <option value="90">90 Minutes</option>
+            <div style="flex: 1; min-width: 200px;">
+                <label for="input-duration" style="display:block; margin-bottom:8px; font-weight:600;">Session Ceiling Duration:</label>
+                <select id="input-duration" style="width:100%; padding:12px; background:#1e1e1e; color:#fff; border:1px solid #333; border-radius:6px;">
+                    <option value="30">30 Minute Express Block</option>
+                    <option value="60" selected>60 Minute Standard Block</option>
+                    <option value="90">90 Minute Extended Volume Block</option>
                 </select>
             </div>
-
-            <button class="submit-btn" onclick="generateWorkout()">Generate Tracker Dashboard ✨</button>
         </div>
+        <button class="submit-btn" onclick="generateWorkout()">Generate Tracker Dashboard ✨</button>
+    </div>
 
-        <div id="step-4" class="step-section">
-            <h2>Track Your Session</h2>
-            <p class="subtitle">Customize your exercises, enter your weights, and log your reps.</p>
+    <div class="container" id="tracker-container" style="display: none;">
+        <h2>Interactive Training Session Log</h2>
+        <div id="exercise-cards-target"></div>
+        <button class="submit-btn" onclick="saveActiveLog()" style="margin-top: 20px; background-color: #00ff87 !important; color: #000 !important; border-color: #00ff87 !important;">Save & Log Workout 💾</button>
+    </div>
 
-            <div id="tracker-container"></div>
-
-            <div class="action-row">
-                <button class="submit-btn" onclick="saveActiveLog()">Save & Log Workout 💾</button>
-                <button class="reset-btn" onclick="resetApp()">Exit Workout 🔄</button>
-            </div>
+    <div class="container" id="history-container">
+        <h2>Training History Log 📜</h2>
+        <button class="submit-btn" onclick="fetchWorkoutHistory()" style="margin-bottom: 20px;">Load/Refresh History 🔄</button>
+        <div id="history-log-target">
+            <p style="color: #888;">No history loaded yet. Click the button or save a session to view past logs!</p>
         </div>
-
     </div>
 
     <script src="app.js"></script>

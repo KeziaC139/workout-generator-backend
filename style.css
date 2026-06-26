@@ -1,286 +1,96 @@
-/* --- UNIVERSAL DESIGN TOKENS --- */
-:root {
-    --bg-color: #121214;
-    --card-bg: #1a1a1e;
-    --accent-color: #00ff87;
-    --text-color: #ffffff;
-    --text-secondary: #a0a0a5;
-}
-
+/* --- CORE LAYOUT RESET --- */
 body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
+    background-color: #0d0d0d;
+    color: #ffffff;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
-    padding: 40px 20px;
-    display: flex;
-    justify-content: center;
+    padding: 40px 0;
+
+    /* These properties guarantee elements stack vertically down the page */
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    min-height: 100vh;
+    box-sizing: border-box;
 }
 
-.app-container {
-    max-width: 800px;
-    width: 100%;
-    text-align: center;
+/* --- CONTAINER BLOCKS --- */
+.container {
+    background: #141414;
+    border: 1px solid #222;
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 24px !important; /* Forces spacing between steps */
+    width: 90%;
+    max-width: 850px; /* Locks your boxes into a sharp, unified width */
+    box-sizing: border-box;
+    display: block !important; /* Blocks grid/flex column inheritance */
 }
 
-h1 {
-    font-size: 2.5rem;
-    margin-bottom: 5px;
-}
-
-.subtitle {
-    color: var(--text-secondary);
-    margin-bottom: 40px;
-}
-
-/* --- MULTI-STEP WIZARD SCREENS --- */
-.step-section {
-    display: none; /* Hidden by default */
-    animation: fadeIn 0.4s ease-in-out forwards;
-}
-
-.step-section.active {
-    display: block; /* Displayed when assigned by JavaScript */
-}
-
-/* --- GRID CARDS (STEPS 1 & 2) --- */
-.grid-3 {
+/* --- STEP 1 & 2 CARD GRIDS --- */
+.selection-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 20px;
-    margin-top: 35px;
+    margin-top: 20px;
 }
 
+/* --- SLEEK SELECTION CARDS --- */
 .card-btn {
-    background-color: var(--card-bg);
-    border: 2px solid transparent;
-    border-radius: 12px;
-    padding: 30px 20px;
-    color: var(--text-color);
-    cursor: pointer;
-    transition: all 0.25s ease-in-out;
-    text-align: center;
-}
-
-.card-btn:hover {
-    transform: translateY(-5px);
-    border-color: var(--accent-color);
-    box-shadow: 0 10px 20px rgba(0, 255, 135, 0.1);
-}
-
-.emoji {
-    font-size: 2.5rem;
-    display: block;
-    margin-bottom: 10px;
-}
-
-/* --- DROP-DOWN FORM FIELDS (STEP 3) --- */
-.input-group {
-    margin: 25px auto;
-    max-width: 300px;
-    text-align: left;
-}
-
-label {
-    display: block;
-    margin-bottom: 8px;
-    color: var(--text-secondary);
-}
-
-select {
-    width: 100%;
-    padding: 12px;
-    background: var(--card-bg);
-    color: white;
-    border: 1px solid #333;
-    border-radius: 6px;
-    font-size: 1rem;
-}
-
-/* --- INTERACTIVE TRACKER DASHBOARD (STEP 4) --- */
-.exercise-card {
-    background: var(--card-bg);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 25px;
-    text-align: left;
-    border: 1px solid #2a2a30;
-}
-
-.exercise-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #2a2a30;
-    padding-bottom: 12px;
-    margin-bottom: 15px;
-}
-
-.exercise-header h3 {
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.tag {
-    background: #333;
-    font-size: 0.75rem;
-    padding: 4px 8px;
-    border-radius: 4px;
-    color: var(--accent-color);
-}
-
-.swap-select {
-    background: #121214;
-    color: var(--text-secondary);
-    border: 1px solid #333;
-    padding: 6px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-.swap-select:focus {
-    border-color: var(--accent-color);
-    outline: none;
-}
-
-.set-row {
-    display: grid;
-    grid-template-columns: 80px 1fr 1fr 50px;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 10px;
-}
-
-.set-num {
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-.tracker-input {
-    background: #121214;
-    border: 1px solid #333;
-    color: white;
-    padding: 8px;
-    border-radius: 6px;
-    width: 80%;
-    font-size: 0.95rem;
-}
-
-.tracker-input:focus {
-    border-color: var(--accent-color);
-    outline: none;
-}
-
-/* --- CUSTOM INTERACTIVE CHECKBOXES --- */
-.check-container {
-    position: relative;
-    cursor: pointer;
-    display: block;
-    height: 24px;
-    width: 24px;
-}
-
-.check-container input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.checkmark {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 24px;
-    width: 24px;
-    background-color: #2a2a30;
-    border-radius: 6px;
-    transition: 0.2s;
-}
-
-.check-container input:checked ~ .checkmark {
-    background-color: var(--accent-color);
-}
-
-.checkmark:after {
-    content: "";
-    position: absolute;
-    display: none;
-}
-
-.check-container input:checked ~ .checkmark:after {
-    display: block;
-}
-
-.check-container .checkmark:after {
-    left: 9px;
-    top: 5px;
-    width: 5px;
-    height: 10px;
-    border: solid #000;
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
-}
-
-/* --- OVERHAULED NEON ACTION BUTTONS --- */
-.action-row {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    margin-top: 30px;
-}
-
-/* --- OVERHAULED GENERATE BUTTON (Landing Page Style) --- */
-.submit-btn {
-    background-color: var(--card-bg); /* Matches the dark charcoal landing cards */
-    border: 2px solid #333; /* Clean, subtle border until hovered */
-    border-radius: 12px; /* Smooth rounded corners like your cards */
-    padding: 16px 35px;
-    color: var(--text-color); /* Crisp white text */
-    font-family: inherit;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 30px;
-    transition: all 0.25s ease-in-out; /* Silky smooth hover animation */
-    display: inline-block;
-}
-
-/* Hover State */
-.submit-btn:hover {
-    transform: translateY(-5px); /* Elegant lifting action */
-    border-color: var(--accent-color); /* Changes to the vibrant neon green */
-    box-shadow: 0 10px 20px rgba(0, 255, 135, 0.15); /* Soft, premium green glow */
-    color: var(--text-color);
-}
-
-/* Active click physical feedback */
-.submit-btn:active {
-    transform: translateY(-2px);
-}
-
-.reset-btn {
-    background: transparent;
-    color: var(--text-secondary);
+    background: #1e1e1e;
     border: 2px solid #333;
-    font-weight: 600;
-    padding: 14px 38px;
-    font-size: 1rem;
-    border-radius: 30px;
+    border-radius: 8px;
+    padding: 20px;
+    color: #fff;
     cursor: pointer;
-    margin-top: 25px;
-    transition: all 0.2s ease-in-out;
+    text-align: left;
+    transition: all 0.25s ease;
 }
 
-.reset-btn:hover {
-    border-color: #ff4a4a;
-    color: #ff4a4a;
-    background: rgba(255, 74, 74, 0.05);
+/* The sleek purple hover you want */
+.card-btn:hover {
+    border-color: #bc13fe;
+    box-shadow: 0 0 12px rgba(188, 19, 254, 0.2);
 }
 
-/* --- ANIMATION FEEDBACK --- */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+.card-btn.active {
+    border-color: #bc13fe;
+    background: rgba(188, 19, 254, 0.05);
+}
+
+/* --- APP BUTTON STYLES --- */
+.submit-btn {
+    background: #bc13fe !important; /* Your signature vibrant purple */
+    color: #ffffff !important;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 14px 28px;
+    border: 2px solid #bc13fe !important;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%; /* Spans across the container beautifully */
+    transition: all 0.25s ease-in-out;
+    box-shadow: 0 4px 12px rgba(188, 19, 254, 0.2);
+    margin-top: 10px;
+}
+
+.submit-btn:hover {
+    background: #a10fdb !important; /* Slightly deeper purple on hover */
+    border-color: #a10fdb !important;
+    box-shadow: 0 0 16px rgba(188, 19, 254, 0.4);
+    transform: translateY(-1px); /* Subtle premium lift effect */
+}
+
+/* Specific styling override to make the final "Save Workout" button turn green */
+#tracker-container .submit-btn {
+    background: #00ff87 !important; /* Vibrant neon green */
+    color: #0d0d0d !important;      /* Dark text for high contrast readability */
+    border-color: #00ff87 !important;
+    box-shadow: 0 4px 12px rgba(0, 255, 135, 0.2);
+}
+
+#tracker-container .submit-btn:hover {
+    background: #00e574 !important;
+    border-color: #00e574 !important;
+    box-shadow: 0 0 16px rgba(0, 255, 135, 0.4);
 }

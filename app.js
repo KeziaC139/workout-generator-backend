@@ -1,168 +1,204 @@
-//Holds the user's choices as they click through
-let userSelection = {
-    physique: "",
-    equipment: "",
-    days_per_week: 4,
-    duration_mins: 60
-};
+/**
+ * Name: Kezia Chacko
+ * Program: Frontend App Pipeline (app.js)
+ * Manages UI selections, exercise switching dropdowns, backend communication, and rendering histories.
+ */
 
-let currentExercises = []; // Holds the exercises currently on the screen
-let masterExercisesList = []; // Holds all alternative exercises for swapping
+let selections = { physique: null, equipment: null };
+let masterExercisesPool = [];
 
-// Captures physique choice and moves to Step 2
-function selectPhysique(type) {
-    userSelection.physique = type;
-    navigateToStep(1, 2);
+// Triggers immediately when index.html loads up in the browser
+function initializePage() {
+    fetchMasterExercisePool();
+    fetchWorkoutHistory();
 }
 
-// Captures equipment choice and moves to Step 3
-function selectEquipment(type) {
-    userSelection.equipment = type;
-    navigateToStep(2, 3);
-    fetchAllExercises(); // Prefetch the swap alternatives in the background
-}
-
-// Fetch all alternative exercises for the mix-and-match feature
-async function fetchAllExercises() {
+// Caches the list of all master movements to populate alternative exercise filters
+async function fetchMasterExercisePool() {
     try {
-        const response = await fetch('http://127.0.0.1:8000/exercises');
-        masterExercisesList = await response.json();
+        const response = await fetch("http://127.0.0.1:8000/exercises/");
+        masterExercisesPool = await response.json();
     } catch (err) {
-        console.error("Failed to load alternative exercises for swapping", err);
+        console.error("Failed to load master exercises:", err);
     }
 }
 
-// STEP 3 -> STEP 4: Request data and dynamically build the tracking spreadsheet
-async function generateWorkout() {
-    userSelection.days_per_week = parseInt(document.getElementById('days').value);
-    userSelection.duration_mins = parseInt(document.getElementById('duration').value);
+// Manages card selection styles and saves chosen values
+function selectOption(category, value, element) {
+    const container = element.parentElement;
+    const buttons = container.querySelectorAll('.card-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    element.classList.add('active');
+    selections[category] = value;
+}
 
-    const trackerContainer = document.getElementById('tracker-container');
-    trackerContainer.innerHTML = "<h3>⏳ Organizing your training room...</h3>";
-    navigateToStep(3, 4);
+// Packages payload values and requests a matching template from FastAPI
+async function generateWorkout() {
+    if (!selections.physique || !selections.equipment) {
+        alert("Please select both a Physique Archetype and Environmental Availability first!");
+        return;
+    }
+
+    const payload = {
+        physique: selections.physique,
+        equipment: selections.equipment,
+        days_per_week: parseInt(document.getElementById("input-days").value),
+        duration_mins: parseInt(document.getElementById("input-duration").value)
+    };
 
     try {
-        const response = await fetch('http://127.0.0.1:8000/recommend-workout', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(userSelection)
+        const response = await fetch("http://127.0.0.1:8000/recommend-workout/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
         });
 
-        const data = await response.json();
-
-        if (response.ok) {
-            currentExercises = data.exercises;
-            renderTrackerDashboard();
-        } else {
-            trackerContainer.innerHTML = `<h3>⚠️ Error</h3><p>${data.detail}</p>`;
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || "Server matching system failure.");
         }
-    } catch (error) {
-        trackerContainer.innerHTML = "<h3>❌ Connection error to your Python backend. Check your terminal!</h3>";
+
+        const data = await response.json();
+        renderTrackerGrid(data.exercises);
+    } catch (err) {
+        alert(`Configuration Exception: ${err.message}`);
     }
 }
 
-// Draw the editable input tables dynamically
-function renderTrackerDashboard() {
-    const container = document.getElementById('tracker-container');
-    container.innerHTML = ""; // Clear loader text
+// Builds the dynamic tracker data spreadsheet markup layout
+function renderTrackerGrid(exercises) {
+    const target = document.getElementById("exercise-cards-target");
+    target.innerHTML = "";
 
-    currentExercises.forEach((exercise, exIndex) => {
-        // Create a card for each individual exercise
-        const card = document.createElement('div');
-        card.className = 'exercise-card';
-
-        // Header containing Title and the Swap Dropdown selector
-        let swapOptionsHtml = masterExercisesList.map(item =>
-            `<option value="${item.name}" ${item.name === exercise.name ? 'selected' : ''}>${item.name}</option>`
-        ).join('');
-
-        card.innerHTML = `
-            <div class="exercise-header">
-                <h3>${exercise.name} <span class="tag">${exercise.category}</span></h3>
-                <select class="swap-select" onchange="swapExercise(${exIndex}, this.value)">
-                    ${swapOptionsHtml}
-                </select>
-            </div>
-            <div class="sets-grid" id="sets-ex-${exIndex}"></div>
+    exercises.forEach((ex, exIndex) => {
+        let cardHtml = `
+            <div class="exercise-log-block" data-exercise-name="${ex.name}" style="background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 20px; margin-bottom: 15px; text-align: left;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #2b2b2b; padding-bottom:10px;">
+                    <h3 style="margin:0; color:#fff;">${ex.name} <span style="font-size:0.8rem; color:#888; font-weight:normal;">(${ex.category})</span></h3>
+                    <select onchange="updateExerciseName(this, ${exIndex})" style="padding:6px; background:#111; color:#aaa; border:1px solid #444; border-radius:4px;">
+                        <option value="">Alternative Movements...</option>
         `;
 
-        container.appendChild(card);
+        masterExercisesPool.forEach(poolEx => {
+            cardHtml += `<option value="${poolEx.name}">${poolEx.name}</option>`;
+        });
 
-        // Populate rows inside the card for every set requested by the blueprint
-        const setsGrid = document.getElementById(`sets-ex-${exIndex}`);
-        for (let i = 1; i <= exercise.default_sets; i++) {
-            const setRow = document.createElement('div');
-            setRow.className = 'set-row';
-            setRow.innerHTML = `
-                <span class="set-num">Set ${i}</span>
-                <input type="number" placeholder="lbs" class="tracker-input weight" id="weight-${exIndex}-${i}">
-                <input type="number" placeholder="reps" value="${exercise.default_reps}" class="tracker-input reps" id="reps-${exIndex}-${i}">
-                <label class="check-container">
-                    <input type="checkbox">
-                    <span class="checkmark"></span>
-                </label>
+        cardHtml += `
+                    </select>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 2fr 2fr; gap: 10px; font-weight: bold; color: #888; margin-bottom: 8px; text-align: center;">
+                    <div>Set</div><div>Weight (lbs)</div><div>Reps Performed</div>
+                </div>
+        `;
+
+        for (let s = 1; s <= ex.default_sets; s++) {
+            cardHtml += `
+                <div class="set-row" data-set-number="${s}" style="display: grid; grid-template-columns: 1fr 2fr 2fr; gap: 10px; margin-bottom: 8px; align-items: center;">
+                    <div style="text-align: center; color: #bc13fe; font-weight: bold;">${s}</div>
+                    <div><input type="number" class="input-weight" value="0" style="width:100%; padding:8px; background:#111; color:#00ff87; border:1px solid #333; border-radius:4px; text-align:center;"></div>
+                    <div><input type="number" class="input-reps" value="${ex.default_reps}" style="width:100%; padding:8px; background:#111; color:#00e5ff; border:1px solid #333; border-radius:4px; text-align:center;"></div>
+                </div>
             `;
-            setsGrid.appendChild(setRow);
         }
+
+        cardHtml += `</div>`;
+        target.insertAdjacentHTML("beforeend", cardHtml);
     });
+
+    document.getElementById("tracker-container").style.display = "block";
+    document.getElementById("tracker-container").scrollIntoView({ behavior: 'smooth' });
 }
 
-// "Mix-and-Match" mechanism: swaps an item in our array and redraws the UI
-function swapExercise(index, newName) {
-    const alternative = masterExercisesList.find(e => e.name === newName);
-    if (alternative) {
-        currentExercises[index].name = alternative.name;
-        currentExercises[index].category = alternative.category;
-        renderTrackerDashboard(); // Re-render to show updated settings
+// Swaps out workout headers dynamically if an alternative selection dropdown is fired
+function updateExerciseName(selectElement, index) {
+    if(selectElement.value !== "") {
+        const header = selectElement.parentElement.querySelector('h3');
+        const block = selectElement.closest('.exercise-log-block');
+        header.innerHTML = `${selectElement.value} <span style="font-size:0.8rem; color:#888; font-weight:normal;">(Substituted)</span>`;
+        block.setAttribute('data-exercise-name', selectElement.value);
     }
 }
 
-// Scrape values out of inputs and ship it over to the SQLite logs database
+// Scrapes input row metric values and posts them straight to SQLite via /submit-log
 async function saveActiveLog() {
-    let completePayload = [];
+    const blocks = document.querySelectorAll(".exercise-log-block");
+    const logPayload = [];
 
-    currentExercises.forEach((exercise, exIndex) => {
-        for (let i = 1; i <= exercise.default_sets; i++) {
-            const weightVal = document.getElementById(`weight-${exIndex}-${i}`).value;
-            const repsVal = document.getElementById(`reps-${exIndex}-${i}`).value;
+    blocks.forEach(block => {
+        const name = block.getAttribute("data-exercise-name");
+        const rows = block.querySelectorAll(".set-row");
 
-            completePayload.push({
-                exercise_name: exercise.name,
-                set_number: i,
-                weight_lbs: weightVal ? parseFloat(weightVal) : 0,
-                reps_performed: repsVal ? parseInt(repsVal) : 0
+        rows.forEach(row => {
+            logPayload.push({
+                exercise_name: name,
+                set_number: parseInt(row.getAttribute("data-set-number")),
+                weight_lbs: parseFloat(row.querySelector(".input-weight").value) || 0,
+                reps_performed: parseInt(row.querySelector(".input-reps").value) || 0
             });
-        }
+        });
     });
 
     try {
-        const response = await fetch('http://127.0.0.1:8000/submit-log', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(completePayload)
+        const response = await fetch("http://127.0.0.1:8000/submit-log/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(logPayload)
         });
 
         const data = await response.json();
-        if (response.ok) {
-            alert("🔥 Workout saved to history successfully!");
-            resetApp();
-        } else {
-            alert("Error saving workout: " + data.detail);
+        if (data.status === "success") {
+            alert("Workout session written into history successfully! 🏆");
+            fetchWorkoutHistory(); // Refreshes the display table layout automatically
         }
     } catch (err) {
-        alert("Could not reach backend database to log weights.");
+        alert("Failed to communicate tracking inputs to server.");
     }
 }
 
-// Simple layout switcher utility
-function navigateToStep(currentStep, nextStep) {
-    document.getElementById(`step-${currentStep}`).classList.remove('active');
-    document.getElementById(`step-${nextStep}`).classList.add('active');
-}
+// Hits /workout-history and builds the historical training ledger view
+async function fetchWorkoutHistory() {
+    const target = document.getElementById("history-log-target");
+    try {
+        const response = await fetch("http://127.0.0.1:8000/workout-history/");
+        const data = await response.json();
 
-// Resets form back to step 1
-function resetApp() {
-    userSelection = { physique: "", equipment: "", days_per_week: 4, duration_mins: 60 };
-    document.getElementById('step-4').classList.remove('active');
-    document.getElementById('step-1').classList.add('active');
+        if (data.status !== "success" || !data.history || data.history.length === 0) {
+            target.innerHTML = `<p style="color: #666;">No logged sessions found in the system yet.</p>`;
+            return;
+        }
+
+        let htmlTable = `
+            <div style="overflow-x: auto; width: 100%;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; margin-top: 10px; background: #1a1a1a; border-radius: 8px; overflow: hidden;">
+                    <thead>
+                        <tr style="background: #262626; color: #bc13fe; border-bottom: 2px solid #333;">
+                            <th style="padding: 12px;">Timestamp</th>
+                            <th style="padding: 12px;">Exercise Movement</th>
+                            <th style="padding: 12px; text-align:center;">Set</th>
+                            <th style="padding: 12px; text-align:center;">Load</th>
+                            <th style="padding: 12px; text-align:center;">Reps</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        data.history.forEach(row => {
+            const cleanDate = new Date(row.date).toLocaleString();
+            htmlTable += `
+                <tr style="border-bottom: 1px solid #262626; transition: background 0.2s;" onmouseover="this.style.background='#222'" onmouseout="this.style.background='none'">
+                    <td style="padding: 12px; color: #777; font-size:0.9rem;">${cleanDate}</td>
+                    <td style="padding: 12px; font-weight: bold; color: #fff;">${row.exercise_name}</td>
+                    <td style="padding: 12px; color: #bc13fe; text-align:center; font-weight:bold;">${row.set_number}</td>
+                    <td style="padding: 12px; color: #00ff87; text-align:center;">${row.weight_lbs} lbs</td>
+                    <td style="padding: 12px; color: #00e5ff; text-align:center;">${row.reps_performed}</td>
+                </tr>
+            `;
+        });
+
+        htmlTable += `</tbody></table></div>`;
+        target.innerHTML = htmlTable;
+    } catch (error) {
+        console.error("Error fetching history:", error);
+        target.innerHTML = `<p style="color: #ff4a4a;">Failed to load training database logs.</p>`;
+    }
 }
