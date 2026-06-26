@@ -1,121 +1,164 @@
-import sqlite3
+"""
+Name: Kezia Chacko
+Program: FastAPI backend service for the Custom Fitness Tracker app.
+Handles workout recommendations with a flexible fallback strategy and logs session data to SQLite.
+"""
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List
+import sqlite3
 
 app = FastAPI()
 
+# Enable CORS so your local frontend index.html can communicate with the backend port
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
-# --- PYDANTIC SCHEMAS (Data Structures) ---
-
-class UserPreferences(BaseModel):
+# --- PYDANTIC SCHEMAS ---
+class WorkoutRequest(BaseModel):
     physique: str
     equipment: str
     days_per_week: int
     duration_mins: int
 
-
-class LogSet(BaseModel):
+class LogItem(BaseModel):
     exercise_name: str
     set_number: int
-    weight_lbs: Optional[float] = None
-    reps_performed: Optional[int] = None
+    weight_lbs: float
+    reps_performed: int
 
 
-# --- ENDPOINTS ---
+# --- API ENDPOINTS ---
 
-#Fetch a modular workout program based on preferences
-@app.post("/recommend-workout")
-def get_workout(prefs: UserPreferences):
-    conn = sqlite3.connect("workout_app.db")
-    cursor = conn.cursor()
-
-    #First, find the matching program ID
-    program_query = """
-        SELECT programs.id 
-        FROM programs
-        JOIN equipment_options ON programs.equipment_id = equipment_options.id
-        WHERE LOWER(programs.physique) = ? 
-          AND LOWER(equipment_options.name) = ?
-          AND programs.days_per_week = ?
-          AND programs.duration_mins = ?
-    """
-    cursor.execute(program_query, (
-        prefs.physique.lower(),
-        prefs.equipment.lower(),
-        prefs.days_per_week,
-        prefs.duration_mins
-    ))
-
-    program_row = cursor.fetchone()
-
-    if not program_row:
-        conn.close()
-        raise HTTPException(status_code=404, detail="No matching template found.")
-
-    program_id = program_row[0]
-
-    #Now, fetch all individual exercises linked to that program ID
-    exercise_query = """
-        SELECT exercises.name, exercises.category, program_exercises.default_sets, program_exercises.default_reps
-        FROM program_exercises
-        JOIN exercises ON program_exercises.exercise_id = exercises.id
-        WHERE program_exercises.program_id = ?
-    """
-    cursor.execute(exercise_query, (program_id,))
-    rows = cursor.fetchall()
-    conn.close()
-
-    #Format the rows cleanly into a list of structured objects
-    workout_exercises = []
-    for row in rows:
-        workout_exercises.append({
-            "name": row[0],
-            "category": row[1],
-            "default_sets": row[2],
-            "default_reps": row[3]
-        })
-
-    return {"status": "success", "program_id": program_id, "exercises": workout_exercises}
+@app.get("/")
+def read_root():
+    return {"message": "Fitness Tracker Engine API is live and operational!"}
 
 
-#Get all master exercises (for the "Swap/Mix-and-Match" feature)
 @app.get("/exercises")
+@app.get("/exercises/")
 def get_all_exercises():
+    """Returns the full list of master exercises to populate the frontend swap dropdowns."""
     conn = sqlite3.connect("workout_app.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT name, category FROM exercises;")
-    rows = cursor.fetchall()
-    conn.close()
+    try:
+        cursor.execute("SELECT name, category FROM exercises ORDER BY category, name;")
+        rows = cursor.fetchall()
+        return [{"name": r[0], "category": r[1]} for r in rows]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch master exercise list: {str(e)}")
+    finally:
+        conn.close()
 
-    return [{"name": r[0], "category": r[1]} for r in rows]
 
-
-#Save a user's completed workout logs to the database
-@app.post("/submit-log")
-def submit_workout_log(logs: List[LogSet]):
+@app.post("/recommend-workout")
+@app.post("/recommend-workout/")
+def get_workout_recommendation(payload: WorkoutRequest):
+    """Queries the database for a routine matching the user's archetype with a flexible fallback strategy."""
     conn = sqlite3.connect("workout_app.db")
     cursor = conn.cursor()
 
     try:
-        #Loop through each set logged by the user and insert it
-        for entry in logs:
-            cursor.execute("""
-                INSERT INTO workout_logs (exercise_name, set_number, weight_lbs, reps_performed)
-                VALUES (?, ?, ?, ?);
-            """, (entry.exercise_name, entry.set_number, entry.weight_lbs, entry.reps_performed))
-        conn.commit()
-    except Exception as e:
-        conn.close()
-        raise HTTPException(status_code=500, detail=f"Failed to log workout: {str(e)}")
+        # 1. Normalize strings to avoid case or spacing mismatches from frontend buttons
+        frontend_equipment = payload.equipment.lower().strip()
 
-    conn.close()
-    return {"status": "success", "message": "Workout tracked successfully!"}
+        if "gym" in frontend_equipment or "full" in frontend_equipment:
+            db_equipment_name = "full_gym"
+        elif "dumbbell" in frontend_equipment:
+            db_equipment_name = "dumbbells_only"
+        elif "bodyweight" in frontend_equipment or "body" in frontend_equipment:
+            db_equipment_name = "bodyweight_only"
+        else:
+            db_equipment_name = frontend_equipment
+
+        db_physique_name = payload.physique.lower().strip()
+
+        # 2. Get Equipment ID
+        cursor.execute("SELECT id FROM equipment_options WHERE name = ?;", (db_equipment_name,))
+        eq_result = cursor.fetchone()
+        if not eq_result:
+            eq_id = 1  # Standard emergency fallback if equipment mapping breaks
+        else:
+            eq_id = eq_result[0]
+
+        # 3. DUAL-STAGE SEARCH WITH AN ABSOLUTE CATCH-ALL
+        # Stage A: Try finding the exact user request match (Physique + Equipment)
+        cursor.execute("""
+            SELECT id FROM programs 
+            WHERE physique = ? AND equipment_id = ?
+            LIMIT 1;
+        """, (db_physique_name, eq_id))
+        program_result = cursor.fetchone()
+
+        # Stage B Fallback: If that combination doesn't exist, grab ANY routine matching this equipment style
+        if not program_result:
+            cursor.execute("""
+                SELECT id FROM programs 
+                WHERE equipment_id = ?
+                LIMIT 1;
+            """, (eq_id,))
+            program_result = cursor.fetchone()
+
+        # Stage C Fallback: Absolute bulletproof safety. If still nothing, give the very first routine in the database
+        if not program_result:
+            cursor.execute("SELECT id FROM programs LIMIT 1;")
+            program_result = cursor.fetchone()
+
+        # Final failure state check if database is entirely blank
+        if not program_result:
+            raise HTTPException(status_code=404, detail="The workout database appears to be completely empty. Please run build_tracker_db.py!")
+
+        program_id = program_result[0]
+
+        # 4. Fetch the exercises mapped to whatever program ID we settled on
+        cursor.execute("""
+            SELECT e.name, e.category, pe.default_sets, pe.default_reps
+            FROM program_exercises pe
+            JOIN exercises e ON pe.exercise_id = e.id
+            WHERE pe.program_id = ?;
+        """, (program_id,))
+
+        raw_exercises = cursor.fetchall()
+
+        formatted_exercises = [
+            {
+                "name": row[0],
+                "category": row[1],
+                "default_sets": row[2],
+                "default_reps": row[3]
+            }
+            for row in raw_exercises
+        ]
+
+        return {"status": "success", "exercises": formatted_exercises}
+
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=f"Database operational failure: {str(e)}")
+    finally:
+        conn.close()
+
+
+@app.post("/submit-log")
+@app.post("/submit-log/")
+def submit_workout_log(payload: List[LogItem]):
+    """Receives array of tracked training inputs and writes them directly into the SQL logs."""
+    conn = sqlite3.connect("workout_app.db")
+    cursor = conn.cursor()
+    try:
+        log_entries = [(item.exercise_name, item.set_number, item.weight_lbs, item.reps_performed) for item in payload]
+        cursor.executemany("INSERT INTO workout_logs (exercise_name, set_number, weight_lbs, reps_performed) VALUES (?, ?, ?, ?);", log_entries)
+        conn.commit()
+        return {"status": "success", "message": "Successfully logged session!"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
