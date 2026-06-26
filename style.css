@@ -231,31 +231,33 @@ select {
     margin-top: 30px;
 }
 
+/* --- OVERHAULED GENERATE BUTTON (Landing Page Style) --- */
 .submit-btn {
-    background: linear-gradient(135deg, #00ff87 0%, #60efff 100%);
-    color: #000000;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border: none;
-    padding: 16px 40px;
+    background-color: var(--card-bg); /* Matches the dark charcoal landing cards */
+    border: 2px solid #333; /* Clean, subtle border until hovered */
+    border-radius: 12px; /* Smooth rounded corners like your cards */
+    padding: 16px 35px;
+    color: var(--text-color); /* Crisp white text */
+    font-family: inherit;
     font-size: 1rem;
-    border-radius: 30px;
+    font-weight: 600;
     cursor: pointer;
-    margin-top: 25px;
-    transition: all 0.25s ease-in-out;
-    box-shadow: 0 4px 15px rgba(0, 255, 135, 0.2);
+    margin-top: 30px;
+    transition: all 0.25s ease-in-out; /* Silky smooth hover animation */
     display: inline-block;
 }
 
+/* Hover State */
 .submit-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0, 255, 135, 0.4);
-    opacity: 0.95;
+    transform: translateY(-5px); /* Elegant lifting action */
+    border-color: var(--accent-color); /* Changes to the vibrant neon green */
+    box-shadow: 0 10px 20px rgba(0, 255, 135, 0.15); /* Soft, premium green glow */
+    color: var(--text-color);
 }
 
+/* Active click physical feedback */
 .submit-btn:active {
-    transform: translateY(-1px);
+    transform: translateY(-2px);
 }
 
 .reset-btn {
