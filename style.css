@@ -1,4 +1,6 @@
-/* --- CORE LAYOUT RESET --- */
+/* ==========================================================================
+   1. CORE LAYOUT RESET
+   ========================================================================== */
 body {
     background-color: #0d0d0d;
     color: #ffffff;
@@ -6,7 +8,7 @@ body {
     margin: 0;
     padding: 40px 0;
 
-    /* These properties guarantee elements stack vertically down the page */
+    /* Forces elements to cascade down cleanly without column warping */
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
@@ -14,20 +16,29 @@ body {
     box-sizing: border-box;
 }
 
-/* --- CONTAINER BLOCKS --- */
+/* Global rule to prevent padding from expanding button widths beyond 100% */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+/* ==========================================================================
+   2. CONTAINER BLOCKS
+   ========================================================================== */
 .container {
     background: #141414;
     border: 1px solid #222;
     border-radius: 12px;
     padding: 30px;
-    margin-bottom: 24px !important; /* Forces spacing between steps */
+    margin: 0 auto 24px auto !important; /* Locks spacing down the page */
     width: 90%;
-    max-width: 850px; /* Locks your boxes into a sharp, unified width */
-    box-sizing: border-box;
-    display: block !important; /* Blocks grid/flex column inheritance */
+    max-width: 850px;
+    display: block !important;
+    clear: both;
 }
 
-/* --- STEP 1 & 2 CARD GRIDS --- */
+/* ==========================================================================
+   3. CARD GRIDS & CLICKS
+   ========================================================================== */
 .selection-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -35,7 +46,6 @@ body {
     margin-top: 20px;
 }
 
-/* --- SLEEK SELECTION CARDS --- */
 .card-btn {
     background: #1e1e1e;
     border: 2px solid #333;
@@ -45,9 +55,9 @@ body {
     cursor: pointer;
     text-align: left;
     transition: all 0.25s ease;
+    width: 100%;
 }
 
-/* The sleek purple hover you want */
 .card-btn:hover {
     border-color: #bc13fe;
     box-shadow: 0 0 12px rgba(188, 19, 254, 0.2);
@@ -58,9 +68,14 @@ body {
     background: rgba(188, 19, 254, 0.05);
 }
 
-/* --- APP BUTTON STYLES --- */
+/* ==========================================================================
+   4. SYSTEM BUTTON STYLES (WITH OVERFLOW SAFETY FIX)
+   ========================================================================== */
 .submit-btn {
-    background: #bc13fe !important; /* Your signature vibrant purple */
+    display: block; /* Essential for <a> tags to behave like real buttons */
+    width: 100%;
+    box-sizing: border-box; /* Keeps padding inside the box boundaries! */
+    background: #bc13fe !important;
     color: #ffffff !important;
     font-size: 1rem;
     font-weight: 600;
@@ -68,23 +83,26 @@ body {
     border: 2px solid #bc13fe !important;
     border-radius: 8px;
     cursor: pointer;
-    width: 100%; /* Spans across the container beautifully */
     transition: all 0.25s ease-in-out;
     box-shadow: 0 4px 12px rgba(188, 19, 254, 0.2);
     margin-top: 10px;
+    text-align: center;
 }
 
 .submit-btn:hover {
-    background: #a10fdb !important; /* Slightly deeper purple on hover */
+    background: #a10fdb !important;
     border-color: #a10fdb !important;
     box-shadow: 0 0 16px rgba(188, 19, 254, 0.4);
-    transform: translateY(-1px); /* Subtle premium lift effect */
+    transform: translateY(-1px);
 }
 
-/* Specific styling override to make the final "Save Workout" button turn green */
+/* ==========================================================================
+   5. SPECIAL ACTION OVERRIDES
+   ========================================================================== */
+/* Changes the tracking block submit button neon green */
 #tracker-container .submit-btn {
-    background: #00ff87 !important; /* Vibrant neon green */
-    color: #0d0d0d !important;      /* Dark text for high contrast readability */
+    background: #00ff87 !important;
+    color: #0d0d0d !important;
     border-color: #00ff87 !important;
     box-shadow: 0 4px 12px rgba(0, 255, 135, 0.2);
 }

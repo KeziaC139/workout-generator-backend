@@ -1,6 +1,37 @@
+/**
+ * Name: Kezia Chacko
+ * Program: Frontend App Pipeline (app.js)
+ * Manages UI selections, user login states, and backend workout integration.
+ */
+
 let selections = { physique: null, equipment: null };
 let masterExercisesPool = [];
 let currentUser = null;
+
+// --- AUTOMATIC AUTO-LOGIN HANDSHAKE ---
+// Checks immediately if a session exists in the browser when page runs
+(function checkActiveSession() {
+    const savedUser = sessionStorage.getItem("workout_app_user");
+    if (savedUser) {
+        const checkExist = setInterval(() => {
+            const authScreen = document.getElementById("auth-screen");
+            const appContent = document.getElementById("app-content");
+            const welcomeUser = document.getElementById("welcome-username");
+
+            if (authScreen && appContent && welcomeUser) {
+                currentUser = savedUser;
+                welcomeUser.innerText = currentUser;
+                authScreen.style.display = "none";
+                appContent.style.display = "block";
+                clearInterval(checkExist);
+            }
+        }, 10);
+    }
+})();
+
+function initializePage() {
+    fetchMasterExercisePool();
+}
 
 // Handle user authentications (Sign up / Log in)
 async function handleAuth(type) {
@@ -27,6 +58,8 @@ async function handleAuth(type) {
             alert("Account encrypted and built successfully! Please Log In.");
         } else {
             currentUser = data.username;
+            sessionStorage.setItem("workout_app_user", data.username); // Remembers session
+
             document.getElementById("welcome-username").innerText = currentUser;
             document.getElementById("auth-screen").style.display = "none";
             document.getElementById("app-content").style.display = "block";
@@ -39,16 +72,13 @@ async function handleAuth(type) {
 
 function logout() {
     currentUser = null;
+    sessionStorage.removeItem("workout_app_user"); // Clears memory
+
     document.getElementById("auth-user").value = "";
     document.getElementById("auth-pass").value = "";
     document.getElementById("auth-screen").style.display = "flex";
     document.getElementById("app-content").style.display = "none";
     document.getElementById("tracker-container").style.display = "none";
-}
-
-function initializePage() {
-    fetchMasterExercisePool();
-    fetchWorkoutHistory();
 }
 
 async function fetchMasterExercisePool() {
@@ -70,7 +100,7 @@ function selectOption(category, value, element) {
 
 async function generateWorkout() {
     if (!selections.physique || !selections.equipment) {
-        alert("Select choices first!");
+        alert("Please select both options first!");
         return;
     }
 
@@ -151,7 +181,7 @@ async function saveActiveLog() {
         const rows = block.querySelectorAll(".set-row");
         rows.forEach(row => {
             logPayload.push({
-                username: currentUser, // Appends current user name to workout entry
+                username: currentUser,
                 exercise_name: name,
                 set_number: parseInt(row.getAttribute("data-set-number")),
                 weight_lbs: parseFloat(row.querySelector(".input-weight").value) || 0,
@@ -169,34 +199,8 @@ async function saveActiveLog() {
         const data = await response.json();
         if (data.status === "success") {
             alert("Workout written to your history record! 🏆");
-            fetchWorkoutHistory();
         }
     } catch (err) {
         alert("Failed to save log data.");
-    }
-}
-
-async function fetchWorkoutHistory() {
-    if(!currentUser) return;
-    const target = document.getElementById("history-log-target");
-    try {
-        const response = await fetch(`http://127.0.0.1:8000/workout-history/${currentUser}/`);
-        const data = await response.json();
-
-        if (data.status !== "success" || !data.history || data.history.length === 0) {
-            target.innerHTML = `<p style="color: #666;">No logged sessions found for account: ${currentUser}.</p>`;
-            return;
-        }
-
-        let htmlTable = `<div style="overflow-x: auto; width: 100%;"><table style="width: 100%; border-collapse: collapse; text-align: left; background: #1a1a1a; border-radius: 8px; overflow: hidden;">
-            <thead><tr style="background: #262626; color: #bc13fe; border-bottom: 2px solid #333;"><th style="padding: 12px;">Timestamp</th><th style="padding: 12px;">Exercise</th><th style="padding: 12px; text-align:center;">Set</th><th style="padding: 12px; text-align:center;">Load</th><th style="padding: 12px; text-align:center;">Reps</th></tr></thead><tbody>`;
-
-        data.history.forEach(row => {
-            const cleanDate = new Date(row.date).toLocaleString();
-            htmlTable += `<tr style="border-bottom: 1px solid #262626;"><td style="padding: 12px; color: #777; font-size:0.9rem;">${cleanDate}</td><td style="padding: 12px; font-weight: bold; color: #fff;">${row.exercise_name}</td><td style="padding: 12px; color: #bc13fe; text-align:center; font-weight:bold;">${row.set_number}</td><td style="padding: 12px; color: #00ff87; text-align:center;">${row.weight_lbs} lbs</td><td style="padding: 12px; color: #00e5ff; text-align:center;">${row.reps_performed}</td></tr>`;
-        });
-        target.innerHTML = htmlTable + "</tbody></table></div>";
-    } catch (error) {
-        target.innerHTML = `<p style="color: #ff4a4a;">Failed to load logs.</p>`;
     }
 }

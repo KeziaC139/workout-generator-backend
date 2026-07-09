@@ -6,6 +6,7 @@
     <title>Dynamic Fitness Path Architect</title>
     <link rel="stylesheet" href="style.css">
     <style>
+        /* Ensures containers stack down the page naturally */
         body {
             display: flex;
             flex-direction: column;
@@ -45,9 +46,8 @@
         }
     </style>
 </head>
-<body>
+<body onload="initializePage()">
 
-    <!-- AUTHENTICATION SCREEN COVER OVERLAY -->
     <div id="auth-screen">
         <div class="auth-card">
             <h1 style="color: #bc13fe; margin-bottom: 5px;">Path Architect</h1>
@@ -59,7 +59,6 @@
         </div>
     </div>
 
-    <!-- MAIN APP WRAPPER (Hidden Until Authorized) -->
     <div id="app-content" style="display: none; width: 100%;">
         <center>
             <header>
@@ -70,7 +69,6 @@
                 <p>Welcome back, <span id="welcome-username" style="color: #bc13fe; font-weight: bold;">User</span>! Customize your training grid below.</p>
             </header>
 
-            <!-- STEP 1: PHYSIQUE TARGET -->
             <div class="container">
                 <h2>Step 1: Choose Your Physique Archetype</h2>
                 <div class="selection-grid">
@@ -89,7 +87,6 @@
                 </div>
             </div>
 
-            <!-- STEP 2: EQUIPMENT MATRIX -->
             <div class="container">
                 <h2>Step 2: Define Environmental Availability</h2>
                 <div class="selection-grid">
@@ -108,7 +105,6 @@
                 </div>
             </div>
 
-            <!-- STEP 3: LOGISTICAL PARAMETERS -->
             <div class="container">
                 <h2>Step 3: Temporal Commitments</h2>
                 <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px;">
@@ -132,20 +128,16 @@
                 <button class="submit-btn" onclick="generateWorkout()">Generate Tracker Dashboard ✨</button>
             </div>
 
-            <!-- STEP 4: INTERACTIVE TRACKING GRID CONTAINER -->
             <div class="container" id="tracker-container" style="display: none;">
                 <h2>Interactive Training Session Log</h2>
                 <div id="exercise-cards-target"></div>
                 <button class="submit-btn" onclick="saveActiveLog()">Save & Log Workout 💾</button>
             </div>
 
-            <!-- STEP 5: WORKOUT HISTORY VIEWER -->
             <div class="container" id="history-container">
-                <h2>Training History Log 📜</h2>
-                <button class="submit-btn" onclick="fetchWorkoutHistory()" style="margin-bottom: 20px;">Load/Refresh History 🔄</button>
-                <div id="history-log-target">
-                    <p style="color: #888;">No history loaded yet.</p>
-                </div>
+                <h2>Training History Ledger 📜</h2>
+                <p style="color: #888; margin-bottom: 15px;">Your session entries are systematically cataloged and bucketed by training date.</p>
+                <a href="history.html" class="submit-btn" style="display: block; text-align: center; text-decoration: none;">Open Separate History View ↗</a>
             </div>
         </center>
     </div>

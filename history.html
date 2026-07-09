@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training Log Ledger</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            margin: 0;
+            padding: 20px 0;
+            box-sizing: border-box;
+        }
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: 20px auto !important;
+            display: block !important;
+        }
+        header {
+            width: 90%;
+            max-width: 900px;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        .day-block {
+            background: #141414;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        .day-header {
+            color: #00ff87;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-top: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.3rem;
+        }
+    </style>
+</head>
+<body onload="initializeHistoryPage()">
+
+    <header>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>Training History Ledger 📜</h1>
+            <a href="index.html" class="submit-btn" style="width:auto; padding: 10px 20px; text-decoration: none; background:#222!important; border-color:#333!important;">← Back to Architect</a>
+        </div>
+        <p>Reviewing historical training sessions for account: <span id="history-user-target" style="color: #bc13fe; font-weight: bold;">Loading...</span></p>
+    </header>
+
+    <div class="container" id="history-days-wrapper">
+        <p style="color: #888; text-align: center;">Loading archived sessions...</p>
+    </div>
+
+    <script src="history.js"></script>
+</body>
+</html>
