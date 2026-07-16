@@ -1,7 +1,7 @@
 /**
  * Name: Kezia Chacko
  * Program: Frontend App Pipeline (app.js)
- * Manages UI selections, user login states, and backend workout integration.
+ * Manages UI selections, user login states, backend workout integration, and streak metrics.
  */
 
 let selections = { physique: null, equipment: null };
@@ -23,6 +23,11 @@ let currentUser = null;
                 welcomeUser.innerText = currentUser;
                 authScreen.style.display = "none";
                 appContent.style.display = "block";
+
+                // Initialize page data and fetch user's streak
+                initializePage();
+                fetchUserStreak();
+
                 clearInterval(checkExist);
             }
         }, 10);
@@ -31,6 +36,32 @@ let currentUser = null;
 
 function initializePage() {
     fetchMasterExercisePool();
+}
+
+// --- STREAK ENGINE INTEGRATION ---
+// Fetches the active daily workout streak from the backend database
+async function fetchUserStreak() {
+    if (!currentUser) return;
+
+    try {
+        const response = await fetch(`http://127.0.0.1:8000/streak/${currentUser}`);
+        if (!response.ok) throw new Error("Could not fetch streak data.");
+
+        const data = await response.json();
+
+        // Update UI streak count display if elements exist
+        const streakContainer = document.getElementById("streak-container");
+        const streakCountVal = document.getElementById("streak-count-value");
+
+        if (streakCountVal) {
+            streakCountVal.innerText = data.streak_count || 0;
+        }
+        if (streakContainer) {
+            streakContainer.style.display = "block";
+        }
+    } catch (err) {
+        console.error("Streak Engine Error:", err);
+    }
 }
 
 // Handle user authentications (Sign up / Log in)
@@ -63,7 +94,9 @@ async function handleAuth(type) {
             document.getElementById("welcome-username").innerText = currentUser;
             document.getElementById("auth-screen").style.display = "none";
             document.getElementById("app-content").style.display = "block";
+
             initializePage();
+            fetchUserStreak(); // Load streak count upon successful login
         }
     } catch (err) {
         alert(`Authentication Failure: ${err.message}`);
@@ -79,6 +112,9 @@ function logout() {
     document.getElementById("auth-screen").style.display = "flex";
     document.getElementById("app-content").style.display = "none";
     document.getElementById("tracker-container").style.display = "none";
+
+    const streakContainer = document.getElementById("streak-container");
+    if (streakContainer) streakContainer.style.display = "none";
 }
 
 async function fetchMasterExercisePool() {
@@ -91,6 +127,9 @@ async function fetchMasterExercisePool() {
 }
 
 function selectOption(category, value, element) {
+    // If element is not passed or target is missing, abort to prevent crashes
+    if (!element) return;
+
     const container = element.parentElement;
     const buttons = container.querySelectorAll('.card-btn');
     buttons.forEach(btn => btn.classList.remove('active'));
@@ -199,8 +238,19 @@ async function saveActiveLog() {
         const data = await response.json();
         if (data.status === "success") {
             alert("Workout written to your history record! 🏆");
+
+            // Auto-trigger streak recalculation to immediately reflect the new workout!
+            fetchUserStreak();
         }
     } catch (err) {
         alert("Failed to save log data.");
     }
 }
+
+// --- GLOBAL ATTACHMENTS (Ensures inline HTML onclick bindings work) ---
+window.handleAuth = handleAuth;
+window.selectOption = selectOption;
+window.generateWorkout = generateWorkout;
+window.saveActiveLog = saveActiveLog;
+window.logout = logout;
+window.updateExerciseName = updateExerciseName;
