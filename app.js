@@ -119,7 +119,7 @@ function logout() {
 
 async function fetchMasterExercisePool() {
     try {
-        const response = await fetch("http://127.0.0.1:8000/exercises/");
+        const response = await fetch("https://workout-generator-backend.onrender.com");
         masterExercisesPool = await response.json();
     } catch (err) {
         console.error("Failed to fetch exercises:", err);
@@ -151,7 +151,7 @@ async function generateWorkout() {
     };
 
     try {
-        const response = await fetch("http://127.0.0.1:8000/recommend-workout/", {
+        const response = await fetch("https://workout-generator-backend.onrender.com", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
@@ -230,7 +230,7 @@ async function saveActiveLog() {
     });
 
     try {
-        const response = await fetch("http://127.0.0.1:8000/submit-log/", {
+        const response = await fetch("https://workout-generator-backend.onrender.com", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(logPayload)
