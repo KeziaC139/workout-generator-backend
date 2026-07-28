@@ -6,3 +6,7 @@ __pycache__/
 
 #Ignore local database files
 *.db
+
+# .gitignore
+migrate_data.py
+workout_app.db
