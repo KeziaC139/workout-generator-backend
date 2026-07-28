@@ -46,7 +46,7 @@
         }
     </style>
 </head>
-<body onload="initializePage()">
+<body>
 
     <div id="auth-screen">
         <div class="auth-card">
@@ -60,7 +60,7 @@
     </div>
 
     <div id="app-content" style="display: none; width: 100%;">
-        <center>
+        <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
             <header>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <h1>Custom Fitness Path Architect</h1>
@@ -144,9 +144,21 @@
             <div class="container" id="history-container">
                 <h2>Training History Ledger 📜</h2>
                 <p style="color: #888; margin-bottom: 15px;">Your session entries are systematically cataloged and bucketed by training date.</p>
+
+                <!-- LEDGER ERROR BOX (INJECTED ON NETWORK DELAY) -->
+                <div id="ledger-error-box" style="display: none; background: #2a1515; border: 1px solid #ff4d4d; color: #ff9999; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: left;">
+                    <strong style="color: #ff4d4d;">Ledger Initialization Interrupted ⚠️</strong><br>
+                    <small id="error-details-text">The app is waiting on cloud backend responses.</small><br><br>
+                    💡 <strong>Troubleshooting:</strong> Render free tiers go to sleep when idle. Visit
+                    <a href="https://workout-generator-backend.onrender.com/" target="_blank" style="color: #00ff87;">the server status link</a> to wake it up, then refresh this page!
+                </div>
+
+                <!-- HISTORY TARGET CONTAINER -->
+                <div id="history-list-target" style="text-align: left; margin-bottom: 15px;"></div>
+
                 <a href="history.html" class="submit-btn" style="display: block; text-align: center; text-decoration: none;">Open Separate History View ↗</a>
             </div>
-        </center>
+        </div>
     </div>
 
     <script src="app.js"></script>
