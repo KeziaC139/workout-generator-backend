@@ -62,14 +62,14 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Workout Path Architect API",
-    description="Backend service providing auth, workout tracking, history, and streak analytics.",
-    version="2.0.0"
+    description="Backend service providing auth, workout generation, history, and streak analytics.",
+    version="2.1.0"
 )
 
 # CORS configuration allowing cross-origin requests from Netlify and local development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # You can replace "*" with your specific Netlify domain for tighter security
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -106,6 +106,14 @@ class LogWorkoutPayload(BaseModel):
     sets: List[ExerciseSet]
 
 
+class GenerateWorkoutPayload(BaseModel):
+    username: Optional[str] = None
+    physique: Optional[str] = None
+    equipment: Optional[str] = None
+    days: Optional[int] = 4
+    duration: Optional[int] = 60
+
+
 # ==========================================
 # 5. API ENDPOINTS
 # ==========================================
@@ -133,7 +141,6 @@ def signup(payload: AuthPayload, db: Session = Depends(get_db)):
     if user_exists:
         raise HTTPException(status_code=400, detail="Username is already taken.")
 
-    # Note: For production security, hash passwords using passlib/bcrypt
     new_user = User(username=clean_username, password_hash=payload.password)
     db.add(new_user)
     db.commit()
@@ -155,6 +162,65 @@ def login(payload: AuthPayload, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Invalid username or password.")
 
     return {"status": "success", "message": "Login successful!", "username": user.username}
+
+
+# --- WORKOUT GENERATION ENGINE ---
+
+@app.post("/generate-workout")
+@app.post("/generate-workout/")
+def generate_workout(payload: GenerateWorkoutPayload):
+    """
+    Generates tailored exercise structures based on chosen physique archetype and available equipment.
+    """
+    equipment = payload.equipment or "Full Gym"
+    physique = (payload.physique or "bodybuilder").lower()
+
+    # Base movement templates mapped to environmental constraints
+    if equipment == "Full Gym":
+        if physique == "athlete":
+            exercises = [
+                {"name": "Power Clean / Hang Clean", "sets": 4, "target_reps": "5"},
+                {"name": "Barbell Back Squat", "sets": 4, "target_reps": "6"},
+                {"name": "Incline Dumbbell Press", "sets": 3, "target_reps": "8-10"},
+                {"name": "Cable Face Pulls", "sets": 3, "target_reps": "12-15"}
+            ]
+        elif physique == "strongman":
+            exercises = [
+                {"name": "Barbell Deadlift", "sets": 5, "target_reps": "3-5"},
+                {"name": "Overhead Axle/Barbell Press", "sets": 4, "target_reps": "5"},
+                {"name": "Barbell Zercher Squat", "sets": 4, "target_reps": "6"},
+                {"name": "Farmer's Walk / Heavy Holds", "sets": 3, "target_reps": "45 sec"}
+            ]
+        else:  # Bodybuilder
+            exercises = [
+                {"name": "Barbell Bench Press", "sets": 4, "target_reps": "8-12"},
+                {"name": "Lat Pulldowns", "sets": 4, "target_reps": "10-12"},
+                {"name": "Barbell Squat", "sets": 4, "target_reps": "8-10"},
+                {"name": "Dumbbell Lateral Raises", "sets": 3, "target_reps": "12-15"}
+            ]
+    elif equipment == "Dumbbells Only":
+        exercises = [
+            {"name": "Dumbbell Goblet Squats", "sets": 4, "target_reps": "10-12"},
+            {"name": "Flat Dumbbell Floor/Bench Press", "sets": 4, "target_reps": "10-12"},
+            {"name": "Single-Arm Dumbbell Rows", "sets": 4, "target_reps": "10-12"},
+            {"name": "Seated Dumbbell Shoulder Press", "sets": 3, "target_reps": "10-12"}
+        ]
+    else:  # Bodyweight Only
+        exercises = [
+            {"name": "Bodyweight Push-Ups / Decliners", "sets": 4, "target_reps": "15-20"},
+            {"name": "Inverted Rows / Pull-Ups", "sets": 4, "target_reps": "8-12"},
+            {"name": "Bulgarian Split Squats", "sets": 3, "target_reps": "12 per leg"},
+            {"name": "Plank Core Holds", "sets": 3, "target_reps": "60 sec"}
+        ]
+
+    return {
+        "status": "success",
+        "physique": physique,
+        "equipment": equipment,
+        "days": payload.days,
+        "duration": payload.duration,
+        "exercises": exercises
+    }
 
 
 # --- WORKOUT LOGGING & HISTORY ---
@@ -218,7 +284,6 @@ def get_workout_history(username: str, db: Session = Depends(get_db)):
 def get_streak(username: str, db: Session = Depends(get_db)):
     clean_username = username.strip().lower()
 
-    # Get distinct dates the user logged a workout, ordered descending
     distinct_dates = db.query(WorkoutLog.log_date).filter(
         WorkoutLog.username == clean_username
     ).distinct().order_by(WorkoutLog.log_date.desc()).all()
@@ -231,7 +296,6 @@ def get_streak(username: str, db: Session = Depends(get_db)):
     today = datetime.now().date()
     yesterday = today - timedelta(days=1)
 
-    # Check if the user has logged a workout today or yesterday to keep streak active
     if logged_dates[0] != today and logged_dates[0] != yesterday:
         return {"status": "success", "username": clean_username, "streak": 0}
 
