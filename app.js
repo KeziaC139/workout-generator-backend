@@ -4,6 +4,9 @@
  * Manages UI selections, user login states, backend workout integration, and streak metrics.
  */
 
+// Live Backend Production Base URL
+const BACKEND_URL = "https://workout-generator-backend.onrender.com";
+
 let selections = { physique: null, equipment: null };
 let masterExercisesPool = [];
 let currentUser = null;
@@ -44,7 +47,7 @@ async function fetchUserStreak() {
     if (!currentUser) return;
 
     try {
-        const response = await fetch(`http://127.0.0.1:8000/streak/${currentUser}`);
+        const response = await fetch(`${BACKEND_URL}/streak/${currentUser}`);
         if (!response.ok) throw new Error("Could not fetch streak data.");
 
         const data = await response.json();
@@ -74,7 +77,7 @@ async function handleAuth(type) {
         return;
     }
 
-    const endpoint = `http://127.0.0.1:8000/${type}`;
+    const endpoint = `${BACKEND_URL}/${type}`;
     try {
         const response = await fetch(endpoint, {
             method: "POST",
@@ -119,7 +122,7 @@ function logout() {
 
 async function fetchMasterExercisePool() {
     try {
-        const response = await fetch("https://workout-generator-backend.onrender.com");
+        const response = await fetch(`${BACKEND_URL}/exercises/`);
         masterExercisesPool = await response.json();
     } catch (err) {
         console.error("Failed to fetch exercises:", err);
@@ -127,7 +130,6 @@ async function fetchMasterExercisePool() {
 }
 
 function selectOption(category, value, element) {
-    // If element is not passed or target is missing, abort to prevent crashes
     if (!element) return;
 
     const container = element.parentElement;
@@ -151,7 +153,7 @@ async function generateWorkout() {
     };
 
     try {
-        const response = await fetch("https://workout-generator-backend.onrender.com", {
+        const response = await fetch(`${BACKEND_URL}/recommend-workout/`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
@@ -230,7 +232,7 @@ async function saveActiveLog() {
     });
 
     try {
-        const response = await fetch("https://workout-generator-backend.onrender.com", {
+        const response = await fetch(`${BACKEND_URL}/submit-log/`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(logPayload)
