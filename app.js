@@ -27,9 +27,10 @@ let currentUser = null;
                 authScreen.style.display = "none";
                 appContent.style.display = "block";
 
-                // Initialize page data and fetch user's streak
+                // Initialize page data, streaks, and user history ledger
                 initializePage();
                 fetchUserStreak();
+                fetchWorkoutHistory();
 
                 clearInterval(checkExist);
             }
@@ -56,14 +57,52 @@ async function fetchUserStreak() {
         const streakContainer = document.getElementById("streak-container");
         const streakCountVal = document.getElementById("streak-count-value");
 
+        const streakValue = data.streak_count ?? data.current_streak ?? 0;
+
         if (streakCountVal) {
-            streakCountVal.innerText = data.streak_count || 0;
+            streakCountVal.innerText = streakValue;
         }
         if (streakContainer) {
             streakContainer.style.display = "block";
         }
     } catch (err) {
         console.error("Streak Engine Error:", err);
+    }
+}
+
+// --- WORKOUT HISTORY LEDGER ---
+// Fetches historical logs for the authenticated user
+async function fetchWorkoutHistory() {
+    if (!currentUser) return;
+
+    try {
+        const response = await fetch(`${BACKEND_URL}/workout-history/${currentUser}`);
+        if (!response.ok) throw new Error("Failed to load workout history.");
+
+        const data = await response.json();
+        const historyTarget = document.getElementById("history-list-target");
+
+        if (historyTarget && data.history) {
+            if (data.history.length === 0) {
+                historyTarget.innerHTML = "<p style='color:#888;'>No past workout history logged yet.</p>";
+                return;
+            }
+
+            let historyHtml = "<ul style='list-style:none; padding:0;'>";
+            data.history.forEach(item => {
+                historyHtml += `
+                    <li style="background:#1e1e1e; border:1px solid #333; margin-bottom:8px; padding:10px; border-radius:6px; color:#ccc;">
+                        <strong style="color:#00ff87;">${item.exercise_name}</strong> - Set ${item.set_number}:
+                        ${item.weight_lbs} lbs x ${item.reps_performed} reps
+                        <span style="font-size:0.75rem; color:#888; float:right;">${item.date || ''}</span>
+                    </li>
+                `;
+            });
+            historyHtml += "</ul>";
+            historyTarget.innerHTML = historyHtml;
+        }
+    } catch (err) {
+        console.error("Ledger History Error:", err);
     }
 }
 
@@ -100,6 +139,7 @@ async function handleAuth(type) {
 
             initializePage();
             fetchUserStreak(); // Load streak count upon successful login
+            fetchWorkoutHistory(); // Load workout history ledger
         }
     } catch (err) {
         alert(`Authentication Failure: ${err.message}`);
@@ -114,7 +154,9 @@ function logout() {
     document.getElementById("auth-pass").value = "";
     document.getElementById("auth-screen").style.display = "flex";
     document.getElementById("app-content").style.display = "none";
-    document.getElementById("tracker-container").style.display = "none";
+
+    const trackerContainer = document.getElementById("tracker-container");
+    if (trackerContainer) trackerContainer.style.display = "none";
 
     const streakContainer = document.getElementById("streak-container");
     if (streakContainer) streakContainer.style.display = "none";
@@ -145,11 +187,17 @@ async function generateWorkout() {
         return;
     }
 
+    const daysInput = document.getElementById("input-days");
+    const durationInput = document.getElementById("input-duration");
+
+    const daysVal = daysInput ? parseInt(daysInput.value) || 3 : 3;
+    const durationVal = durationInput ? parseInt(durationInput.value) || 45 : 45;
+
     const payload = {
         physique: selections.physique,
         equipment: selections.equipment,
-        days_per_week: parseInt(document.getElementById("input-days").value),
-        duration_mins: parseInt(document.getElementById("input-duration").value)
+        days_per_week: daysVal,
+        duration_mins: durationVal
     };
 
     try {
@@ -159,19 +207,21 @@ async function generateWorkout() {
             body: JSON.stringify(payload)
         });
 
-        if (!response.ok) throw new Error("Matching failure.");
         const data = await response.json();
+        if (!response.ok) throw new Error(data.detail || "Matching failure.");
+
         renderTrackerGrid(data.exercises);
     } catch (err) {
-        alert(err.message);
+        alert(`Workout Generation Failure: ${err.message}`);
     }
 }
 
 function renderTrackerGrid(exercises) {
     const target = document.getElementById("exercise-cards-target");
+    if (!target) return;
     target.innerHTML = "";
 
-    exercises.forEach((ex, exIndex) => {
+    exercises.forEach((ex) => {
         let cardHtml = `
             <div class="exercise-log-block" data-exercise-name="${ex.name}" style="background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 20px; margin-bottom: 15px; text-align: left;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #2b2b2b; padding-bottom:10px;">
@@ -187,12 +237,15 @@ function renderTrackerGrid(exercises) {
                     <div>Set</div><div>Weight (lbs)</div><div>Reps Performed</div>
                 </div>
         `;
-        for (let s = 1; s <= ex.default_sets; s++) {
+        const totalSets = ex.default_sets || 3;
+        const totalReps = ex.default_reps || 10;
+
+        for (let s = 1; s <= totalSets; s++) {
             cardHtml += `
                 <div class="set-row" data-set-number="${s}" style="display: grid; grid-template-columns: 1fr 2fr 2fr; gap: 10px; margin-bottom: 8px; align-items: center;">
                     <div style="text-align: center; color: #bc13fe; font-weight: bold;">${s}</div>
                     <div><input type="number" class="input-weight" value="0" style="width:100%; padding:8px; background:#111; color:#00ff87; border:1px solid #333; border-radius:4px; text-align:center;"></div>
-                    <div><input type="number" class="input-reps" value="${ex.default_reps}" style="width:100%; padding:8px; background:#111; color:#00e5ff; border:1px solid #333; border-radius:4px; text-align:center;"></div>
+                    <div><input type="number" class="input-reps" value="${totalReps}" style="width:100%; padding:8px; background:#111; color:#00e5ff; border:1px solid #333; border-radius:4px; text-align:center;"></div>
                 </div>
             `;
         }
@@ -200,8 +253,11 @@ function renderTrackerGrid(exercises) {
         target.insertAdjacentHTML("beforeend", cardHtml);
     });
 
-    document.getElementById("tracker-container").style.display = "block";
-    document.getElementById("tracker-container").scrollIntoView({ behavior: 'smooth' });
+    const trackerContainer = document.getElementById("tracker-container");
+    if (trackerContainer) {
+        trackerContainer.style.display = "block";
+        trackerContainer.scrollIntoView({ behavior: 'smooth' });
+    }
 }
 
 function updateExerciseName(selectElement) {
@@ -231,6 +287,11 @@ async function saveActiveLog() {
         });
     });
 
+    if (logPayload.length === 0) {
+        alert("No workout items available to save.");
+        return;
+    }
+
     try {
         const response = await fetch(`${BACKEND_URL}/submit-log/`, {
             method: "POST",
@@ -238,14 +299,18 @@ async function saveActiveLog() {
             body: JSON.stringify(logPayload)
         });
         const data = await response.json();
-        if (data.status === "success") {
+
+        if (response.ok && data.status === "success") {
             alert("Workout written to your history record! 🏆");
 
-            // Auto-trigger streak recalculation to immediately reflect the new workout!
+            // Refresh streak and history ledger immediately
             fetchUserStreak();
+            fetchWorkoutHistory();
+        } else {
+            throw new Error(data.detail || "Error logging workout.");
         }
     } catch (err) {
-        alert("Failed to save log data.");
+        alert(`Failed to save log data: ${err.message}`);
     }
 }
 
@@ -256,3 +321,4 @@ window.generateWorkout = generateWorkout;
 window.saveActiveLog = saveActiveLog;
 window.logout = logout;
 window.updateExerciseName = updateExerciseName;
+window.fetchWorkoutHistory = fetchWorkoutHistory;
