@@ -3,63 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Training Log Ledger</title>
+    <title>Workout History Ledger</title>
     <link rel="stylesheet" href="style.css">
     <style>
         body {
+            background-color: #0d0d0d;
+            color: #fff;
+            font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 100%;
-            margin: 0;
-            padding: 20px 0;
-            box-sizing: border-box;
+            padding: 30px;
         }
-        .container {
-            width: 90%;
-            max-width: 900px;
-            margin: 20px auto !important;
-            display: block !important;
-        }
-        header {
-            width: 90%;
-            max-width: 900px;
-            text-align: left;
-            margin-bottom: 20px;
-        }
-        .day-block {
+        .history-card {
             background: #141414;
             border: 1px solid #222;
             border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 25px;
+            padding: 30px;
+            width: 90%;
+            max-width: 800px;
         }
-        .day-header {
-            color: #00ff87;
-            border-bottom: 2px solid #333;
-            padding-bottom: 10px;
-            margin-top: 0;
+        .history-item {
+            background: #1e1e1e;
+            border: 1px solid #333;
+            margin-bottom: 10px;
+            padding: 12px 16px;
+            border-radius: 6px;
+            color: #ccc;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 1.3rem;
         }
     </style>
 </head>
-<body onload="initializeHistoryPage()">
+<body>
 
-    <header>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h1>Training History Ledger 📜</h1>
-            <a href="index.html" class="submit-btn" style="width:auto; padding: 10px 20px; text-decoration: none; background:#222!important; border-color:#333!important;">← Back to Architect</a>
+    <div class="history-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1 style="color: #bc13fe; margin: 0;">Full History Ledger 📜</h1>
+            <a href="index.html" class="submit-btn" style="text-decoration: none; padding: 8px 16px; width: auto;">← Back to App</a>
         </div>
-        <p>Reviewing historical training sessions for account: <span id="history-user-target" style="color: #bc13fe; font-weight: bold;">Loading...</span></p>
-    </header>
 
-    <div class="container" id="history-days-wrapper">
-        <p style="color: #888; text-align: center;">Loading archived sessions...</p>
+        <p style="color: #888;">Logged records for: <strong id="logged-user" style="color: #00ff87;">...</strong></p>
+
+        <!-- ERROR WARNING BOX -->
+        <div id="history-error-box" style="display: none; background: #2a1515; border: 1px solid #ff4d4d; color: #ff9999; padding: 15px; border-radius: 8px; margin: 15px 0;">
+            <strong style="color: #ff4d4d;">Ledger Initialization Interrupted ⚠️</strong><br>
+            <span id="history-error-details">Could not load historical records from backend.</span><br><br>
+            💡 <strong>Troubleshooting:</strong> Live cloud backends (Render) go to sleep when idle. Visit
+            <a href="https://workout-generator-backend.onrender.com/" target="_blank" style="color: #00ff87;">the Render server URL</a> to wake it up, then refresh!
+        </div>
+
+        <!-- TARGET FOR HISTORY ITEMS -->
+        <div id="history-page-target" style="margin-top: 20px;">
+            <p style="color: #666;">Loading session records from database...</p>
+        </div>
     </div>
 
-    <script src="history.js"></script>
+    <script>
+        // Production Backend Endpoint
+        const BACKEND_URL = "https://workout-generator-backend.onrender.com";
+
+        async function loadHistoryPage() {
+            // Retrieve active session user from storage
+            const currentUser = sessionStorage.getItem("workout_app_user");
+            const userDisplay = document.getElementById("logged-user");
+            const target = document.getElementById("history-page-target");
+            const errorBox = document.getElementById("history-error-box");
+            const errorDetails = document.getElementById("history-error-details");
+
+            if (!currentUser) {
+                target.innerHTML = "<p style='color:#ff4d4d;'>No user active session found. Please return to the home screen and log in.</p>";
+                return;
+            }
+
+            userDisplay.innerText = currentUser;
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/workout-history/${currentUser}`);
+
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({}));
+                    throw new Error(errData.detail || `HTTP Error ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (!data.history || data.history.length === 0) {
+                    target.innerHTML = "<p style='color:#888;'>No past workout entries recorded yet.</p>";
+                    return;
+                }
+
+                let html = "<ul style='list-style:none; padding:0; margin:0;'>";
+                data.history.forEach(item => {
+                    html += `
+                        <li class="history-item">
+                            <div>
+                                <strong style="color:#00ff87;">${item.exercise_name}</strong>
+                                <span style="color:#aaa; font-size:0.9rem; margin-left:10px;">Set ${item.set_number}</span>
+                            </div>
+                            <div>
+                                <span style="color:#00e5ff; font-weight:bold;">${item.weight_lbs} lbs</span> ×
+                                <span style="color:#bc13fe; font-weight:bold;">${item.reps_performed} reps</span>
+                                <span style="font-size:0.75rem; color:#666; margin-left:15px;">${item.date || ''}</span>
+                            </div>
+                        </li>
+                    `;
+                });
+                html += "</ul>";
+                target.innerHTML = html;
+
+            } catch (err) {
+                console.error("History Fetch Error:", err);
+                if (errorBox && errorDetails) {
+                    errorDetails.innerText = `Error Details: ${err.message}`;
+                    errorBox.style.display = "block";
+                }
+                target.innerHTML = "<p style='color:#ff4d4d;'>Failed to connect to the history database service.</p>";
+            }
+        }
+
+        // Run when page loads
+        document.addEventListener("DOMContentLoaded", loadHistoryPage);
+    </script>
 </body>
 </html>
