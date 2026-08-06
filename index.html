@@ -3,164 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Fitness Path Architect</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Workout Path Architect</title>
     <style>
-        /* Ensures containers stack down the page naturally */
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            margin: 0;
-            padding: 20px 0;
+        * {
             box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        .container {
-            width: 90%;
-            max-width: 900px;
-            margin: 20px auto !important;
-            display: block !important;
-            clear: both;
+        body {
+            background-color: #0a0a0a;
+            color: #eeeeee;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
         }
-        header {
-            width: 90%;
-            max-width: 900px;
-            text-align: left;
-            margin-bottom: 20px;
+        .main-wrapper {
+            width: 100%;
+            max-width: 700px;
         }
-        /* Auth Screen Styling */
-        #auth-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #0d0d0d; z-index: 9999;
-            display: flex; justify-content: center; align-items: center;
+        .card-btn {
+            background: #141414;
+            border: 1px solid #222;
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: border 0.2s, background 0.2s;
         }
-        .auth-card {
-            background: #141414; border: 1px solid #222; border-radius: 12px;
-            padding: 40px; width: 100%; max-width: 400px; text-align: center;
+        .card-btn:hover {
+            background: #1e1e1e;
         }
-        .auth-input {
-            width: 100%; padding: 12px; margin: 10px 0; background: #1e1e1e;
-            color: #fff; border: 1px solid #333; border-radius: 6px; box-sizing: border-box;
+        input, select {
+            outline: none;
+        }
+        button:hover {
+            opacity: 0.9;
         }
     </style>
 </head>
 <body>
 
-    <div id="auth-screen">
-        <div class="auth-card">
-            <h1 style="color: #bc13fe; margin-bottom: 5px;">Path Architect</h1>
-            <p style="color: #888; margin-bottom: 25px;">Secure Access Portal</p>
-            <input type="text" id="auth-user" class="auth-input" placeholder="Username">
-            <input type="password" id="auth-pass" class="auth-input" placeholder="Password">
-            <button class="submit-btn" onclick="handleAuth('login')">Log In 🔑</button>
-            <button class="submit-btn" onclick="handleAuth('signup')" style="background:#222!important; border-color:#333!important; margin-top:10px;">Create Secure Account 🆕</button>
-        </div>
-    </div>
+<div class="main-wrapper">
 
-    <div id="app-content" style="display: none; width: 100%;">
-        <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
-            <header>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h1>Custom Fitness Path Architect</h1>
-                    <button class="submit-btn" onclick="logout()" style="width:auto; padding: 8px 16px; background:#ff4a4a!important; border-color:#ff4a4a!important;">Sign Out 🚪</button>
-                </div>
-                <p style="margin-bottom: 15px;">Welcome back, <span id="welcome-username" style="color: #bc13fe; font-weight: bold;">User</span>! Customize your training grid below.</p>
+    <!-- ================= AUTHENTICATION SCREEN ================= -->
+    <div id="auth-screen" style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:80vh;">
+        <div style="background:#141414; border:1px solid #2a2a2a; border-radius:12px; padding:30px; width:100%; max-width:400px; text-align:center;">
+            <h2 style="color:#00e5ff; margin-top:0; margin-bottom:8px;">Workout Path Architect</h2>
+            <p style="color:#888; font-size:0.9rem; margin-bottom:24px;">Sign in or create an account to begin tracking.</p>
 
-                <!-- STREAK ENGINE UI ELEMENT -->
-                <div id="streak-container" style="display: none; padding: 10px 15px; background: #141414; border: 1px solid #bc13fe; border-radius: 8px; width: fit-content; text-align: left;">
-                    <span style="color: #fff; font-weight: bold;">🔥 Current Streak: </span>
-                    <span id="streak-count-value" style="color: #00ff87; font-weight: bold; font-size: 1.2rem; margin: 0 4px;">0</span>
-                    <span style="color: #aaa; font-size: 0.9rem;">Consecutive Days</span>
-                </div>
-            </header>
+            <input type="text" id="auth-user" placeholder="Username" style="width:100%; padding:12px; background:#0a0a0a; color:#fff; border:1px solid #333; border-radius:6px; margin-bottom:12px;">
+            <input type="password" id="auth-pass" placeholder="Password" style="width:100%; padding:12px; background:#0a0a0a; color:#fff; border:1px solid #333; border-radius:6px; margin-bottom:20px;">
 
-            <div class="container">
-                <h2>Step 1: Choose Your Physique Archetype</h2>
-                <div class="selection-grid">
-                    <button class="card-btn" onclick="selectOption('physique', 'bodybuilder', this)">
-                        <h3>Bodybuilder</h3>
-                        <p>Maximize raw hypertrophy and muscular proportion metrics.</p>
-                    </button>
-                    <button class="card-btn" onclick="selectOption('physique', 'athlete', this)">
-                        <h3>Athlete</h3>
-                        <p>Optimize acceleration, reactive power, and functional balance.</p>
-                    </button>
-                    <button class="card-btn" onclick="selectOption('physique', 'strongman', this)">
-                        <h3>Strongman</h3>
-                        <p>Develop maximum absolute compound force and core stability.</p>
-                    </button>
-                </div>
-            </div>
-
-            <div class="container">
-                <h2>Step 2: Define Environmental Availability</h2>
-                <div class="selection-grid">
-                    <button class="card-btn" onclick="selectOption('equipment', 'Full Gym', this)">
-                        <h3>Full Gym</h3>
-                        <p>Unrestricted access to platforms, functional racks, and cable systems.</p>
-                    </button>
-                    <button class="card-btn" onclick="selectOption('equipment', 'Dumbbells Only', this)">
-                        <h3>Dumbbells Only</h3>
-                        <p>Modified home tracking using purely unilateral training movements.</p>
-                    </button>
-                    <button class="card-btn" onclick="selectOption('equipment', 'Bodyweight Only', this)">
-                        <h3>Bodyweight Only</h3>
-                        <p>Pure mechanical resistance using body weight mechanics.</p>
-                    </button>
-                </div>
-            </div>
-
-            <div class="container">
-                <h2>Step 3: Temporal Commitments</h2>
-                <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px;">
-                    <div style="flex: 1; min-width: 200px; text-align: left;">
-                        <label for="input-days" style="display:block; margin-bottom:8px; font-weight:600;">Weekly Target (Days):</label>
-                        <select id="input-days" style="width:100%; padding:12px; background:#1e1e1e; color:#fff; border:1px solid #333; border-radius:6px;">
-                            <option value="3">3 Days Per Week</option>
-                            <option value="4" selected>4 Days Per Week</option>
-                            <option value="5">5 Days Per Week</option>
-                        </select>
-                    </div>
-                    <div style="flex: 1; min-width: 200px; text-align: left;">
-                        <label for="input-duration" style="display:block; margin-bottom:8px; font-weight:600;">Session Ceiling Duration:</label>
-                        <select id="input-duration" style="width:100%; padding:12px; background:#1e1e1e; color:#fff; border:1px solid #333; border-radius:6px;">
-                            <option value="30">30 Minute Express Block</option>
-                            <option value="60" selected>60 Minute Standard Block</option>
-                            <option value="90">90 Minute Extended Volume Block</option>
-                        </select>
-                    </div>
-                </div>
-                <button class="submit-btn" onclick="generateWorkout()">Generate Tracker Dashboard ✨</button>
-            </div>
-
-            <div class="container" id="tracker-container" style="display: none;">
-                <h2>Interactive Training Session Log</h2>
-                <div id="exercise-cards-target"></div>
-                <button class="submit-btn" onclick="saveActiveLog()">Save & Log Workout 💾</button>
-            </div>
-
-            <div class="container" id="history-container">
-                <h2>Training History Ledger 📜</h2>
-                <p style="color: #888; margin-bottom: 15px;">Your session entries are systematically cataloged and bucketed by training date.</p>
-
-                <!-- LEDGER ERROR BOX (INJECTED ON NETWORK DELAY) -->
-                <div id="ledger-error-box" style="display: none; background: #2a1515; border: 1px solid #ff4d4d; color: #ff9999; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: left;">
-                    <strong style="color: #ff4d4d;">Ledger Initialization Interrupted ⚠️</strong><br>
-                    <small id="error-details-text">The app is waiting on cloud backend responses.</small><br><br>
-                    💡 <strong>Troubleshooting:</strong> Render free tiers go to sleep when idle. Visit
-                    <a href="https://workout-generator-backend.onrender.com/" target="_blank" style="color: #00ff87;">the server status link</a> to wake it up, then refresh this page!
-                </div>
-
-                <!-- HISTORY TARGET CONTAINER -->
-                <div id="history-list-target" style="text-align: left; margin-bottom: 15px;"></div>
-
-                <a href="history.html" class="submit-btn" style="display: block; text-align: center; text-decoration: none;">Open Separate History View ↗</a>
+            <div style="display:flex; gap:10px;">
+                <button onclick="handleAuth('login')" style="flex:1; padding:12px; background:#00e5ff; color:#000; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">Log In</button>
+                <button onclick="handleAuth('signup')" style="flex:1; padding:12px; background:#bc13fe; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">Sign Up</button>
             </div>
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <!-- ================= MAIN APP CONTENT ================= -->
+    <div id="app-content" style="display:none;">
+
+        <!-- Header / Profile Bar -->
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #222; padding-bottom:15px; margin-bottom:20px;">
+            <div>
+                <h2 style="margin:0; color:#fff;">Welcome, <span id="welcome-username" style="color:#00e5ff;">User</span></h2>
+                <div id="streak-container" style="display:none; font-size:0.85rem; color:#ff9100; margin-top:4px;">
+                    🔥 Streak: <strong id="streak-count-value">0</strong> Days Active
+                </div>
+            </div>
+            <button onclick="logout()" style="background:#222; color:#ff4444; border:1px solid #444; padding:8px 14px; border-radius:6px; cursor:pointer;">Log Out</button>
+        </div>
+
+        <!-- Step 1: Physique Selection -->
+        <div style="margin-bottom:25px;">
+            <h3 style="color:#bc13fe; margin-bottom:10px;">1. Select Physique Archetype</h3>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px;">
+                <button class="card-btn" onclick="selectOption('physique', 'bodybuilder', this)">💪 Bodybuilder</button>
+                <button class="card-btn" onclick="selectOption('physique', 'athlete', this)">⚡ Athlete</button>
+                <button class="card-btn" onclick="selectOption('physique', 'strongman', this)">🏋️ Strongman</button>
+            </div>
+        </div>
+
+        <!-- Step 2: Equipment Selection -->
+        <div style="margin-bottom:25px;">
+            <h3 style="color:#bc13fe; margin-bottom:10px;">2. Environmental Availability</h3>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px;">
+                <button class="card-btn" onclick="selectOption('equipment', 'Full Gym', this)">🏋️‍♂️ Full Gym</button>
+                <button class="card-btn" onclick="selectOption('equipment', 'Dumbbells Only', this)">🪜 Dumbbells Only</button>
+                <button class="card-btn" onclick="selectOption('equipment', 'Bodyweight Only', this)">🧘 Bodyweight Only</button>
+            </div>
+        </div>
+
+        <!-- Step 3: Routine Parameters -->
+        <div style="margin-bottom:25px; background:#141414; border:1px solid #222; padding:15px; border-radius:8px;">
+            <h3 style="color:#00e5ff; margin-top:0; margin-bottom:15px;">3. Program Parameters</h3>
+            <div style="display:flex; gap:15px; flex-wrap:wrap;">
+                <div style="flex:1; min-width:140px;">
+                    <label style="display:block; color:#aaa; font-size:0.85rem; margin-bottom:5px;">Days Per Week</label>
+                    <input type="number" id="input-days" value="4" min="1" max="7" style="width:100%; padding:10px; background:#0a0a0a; color:#fff; border:1px solid #333; border-radius:4px;">
+                </div>
+                <div style="flex:1; min-width:140px;">
+                    <label style="display:block; color:#aaa; font-size:0.85rem; margin-bottom:5px;">Session Duration (mins)</label>
+                    <input type="number" id="input-duration" value="60" min="15" max="180" style="width:100%; padding:10px; background:#0a0a0a; color:#fff; border:1px solid #333; border-radius:4px;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Generate Action -->
+        <button onclick="generateWorkout()" style="width:100%; padding:15px; background:linear-gradient(90deg, #00e5ff, #bc13fe); color:#000; font-weight:bold; font-size:1.1rem; border:none; border-radius:8px; cursor:pointer; margin-bottom:30px;">
+            Generate Tracker Dashboard
+        </button>
+
+        <!-- Active Tracker Dashboard Container -->
+        <div id="tracker-container" style="display:none; margin-bottom:30px;">
+
+            <!-- Rest Timer Widget -->
+            <div id="rest-timer-box" style="background:#141414; border:1px solid #333; padding:10px 15px; border-radius:8px; display:flex; align-items:center; justify-content:space-between; margin-bottom:15px;">
+                <span style="color:#aaa;">⏱️ Rest Timer: <strong id="timer-display" style="color:#00e5ff; font-size:1.2rem;">00:00</strong></span>
+                <div>
+                    <button onclick="startTimer(60)" style="background:#222; color:#00e5ff; border:1px solid #00e5ff; padding:5px 10px; border-radius:4px; cursor:pointer;">+60s</button>
+                    <button onclick="startTimer(90)" style="background:#222; color:#bc13fe; border:1px solid #bc13fe; padding:5px 10px; border-radius:4px; cursor:pointer; margin-left:5px;">+90s</button>
+                    <button onclick="stopTimer()" style="background:#222; color:#ff4444; border:1px solid #ff4444; padding:5px 10px; border-radius:4px; cursor:pointer; margin-left:5px;">Stop</button>
+                </div>
+            </div>
+
+            <div id="exercise-cards-target"></div>
+
+            <button onclick="saveActiveLog()" style="width:100%; padding:12px; background:#00ff87; color:#000; font-weight:bold; border:none; border-radius:6px; cursor:pointer; margin-top:10px;">
+                💾 Save & Log Workout
+            </button>
+        </div>
+
+        <!-- Workout Ledger / History -->
+        <div style="background:#141414; border:1px solid #222; border-radius:8px; padding:20px;">
+            <h3 style="color:#00e5ff; margin-top:0;">📋 Recent Workout History</h3>
+            <div id="ledger-error-box" style="display:none; color:#ff4444; font-size:0.85rem; margin-bottom:10px;">
+                Could not connect to database history.
+            </div>
+            <div id="history-list-target">
+                <p style="color:#888;">Loading history...</p>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>

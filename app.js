@@ -8,6 +8,67 @@ let selectedSelections = {
     equipment: null
 };
 
+let timerInterval = null;
+
+// ==========================================
+// REST TIMER MODULE
+// ==========================================
+function startTimer(seconds) {
+    clearInterval(timerInterval);
+    let remaining = seconds;
+    const display = document.getElementById("timer-display");
+
+    if (!display) return;
+
+    function updateDisplay() {
+        let mins = Math.floor(remaining / 60);
+        let secs = remaining % 60;
+        display.innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    updateDisplay();
+
+    timerInterval = setInterval(() => {
+        remaining--;
+        if (remaining <= 0) {
+            clearInterval(timerInterval);
+            display.innerText = "TIME'S UP! 🔥";
+            playTimerBeep();
+        } else {
+            updateDisplay();
+        }
+    }, 1000);
+}
+
+function stopTimer() {
+    clearInterval(timerInterval);
+    const display = document.getElementById("timer-display");
+    if (display) display.innerText = "00:00";
+}
+
+function playTimerBeep() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+        osc.frequency.setValueAtTime(880, ctx.currentTime + 0.12);
+
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.35);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start();
+        osc.stop(ctx.currentTime + 0.35);
+    } catch (e) {
+        console.warn("AudioContext playback prevented:", e);
+    }
+}
+
 // ==========================================
 // INITIALIZATION & AUTHENTICATION
 // ==========================================
