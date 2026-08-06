@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workout Path Architect</title>
+    <title>Pulse Check</title>
     <style>
         * {
             box-sizing: border-box;
@@ -48,7 +48,7 @@
     <!-- ================= AUTHENTICATION SCREEN ================= -->
     <div id="auth-screen" style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:80vh;">
         <div style="background:#141414; border:1px solid #2a2a2a; border-radius:12px; padding:30px; width:100%; max-width:400px; text-align:center;">
-            <h2 style="color:#00e5ff; margin-top:0; margin-bottom:8px;">Workout Path Architect</h2>
+            <h2 style="color:#00e5ff; margin-top:0; margin-bottom:8px;">Pulse Check</h2>
             <p style="color:#888; font-size:0.9rem; margin-bottom:24px;">Sign in or create an account to begin tracking.</p>
 
             <input type="text" id="auth-user" placeholder="Username" style="width:100%; padding:12px; background:#0a0a0a; color:#fff; border:1px solid #333; border-radius:6px; margin-bottom:12px;">
@@ -73,6 +73,16 @@
                 </div>
             </div>
             <button onclick="logout()" style="background:#222; color:#ff4444; border:1px solid #444; padding:8px 14px; border-radius:6px; cursor:pointer;">Log Out</button>
+        </div>
+
+        <!-- ALWAYS-VISIBLE REST TIMER WIDGET -->
+        <div id="rest-timer-box" style="background:#141414; border:1px solid #333; padding:12px 18px; border-radius:8px; display:flex; align-items:center; justify-content:space-between; margin-bottom:25px;">
+            <span style="color:#aaa;">⏱️ Rest Timer: <strong id="timer-display" style="color:#00e5ff; font-size:1.3rem; margin-left:6px;">00:00</strong></span>
+            <div>
+                <button onclick="startTimer(60)" style="background:#222; color:#00e5ff; border:1px solid #00e5ff; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">+60s</button>
+                <button onclick="startTimer(90)" style="background:#222; color:#bc13fe; border:1px solid #bc13fe; padding:6px 12px; border-radius:4px; cursor:pointer; margin-left:5px; font-weight:bold;">+90s</button>
+                <button onclick="stopTimer()" style="background:#222; color:#ff4444; border:1px solid #ff4444; padding:6px 12px; border-radius:4px; cursor:pointer; margin-left:5px;">Stop</button>
+            </div>
         </div>
 
         <!-- Step 1: Physique Selection -->
@@ -117,17 +127,6 @@
 
         <!-- Active Tracker Dashboard Container -->
         <div id="tracker-container" style="display:none; margin-bottom:30px;">
-
-            <!-- Rest Timer Widget -->
-            <div id="rest-timer-box" style="background:#141414; border:1px solid #333; padding:10px 15px; border-radius:8px; display:flex; align-items:center; justify-content:space-between; margin-bottom:15px;">
-                <span style="color:#aaa;">⏱️ Rest Timer: <strong id="timer-display" style="color:#00e5ff; font-size:1.2rem;">00:00</strong></span>
-                <div>
-                    <button onclick="startTimer(60)" style="background:#222; color:#00e5ff; border:1px solid #00e5ff; padding:5px 10px; border-radius:4px; cursor:pointer;">+60s</button>
-                    <button onclick="startTimer(90)" style="background:#222; color:#bc13fe; border:1px solid #bc13fe; padding:5px 10px; border-radius:4px; cursor:pointer; margin-left:5px;">+90s</button>
-                    <button onclick="stopTimer()" style="background:#222; color:#ff4444; border:1px solid #ff4444; padding:5px 10px; border-radius:4px; cursor:pointer; margin-left:5px;">Stop</button>
-                </div>
-            </div>
-
             <div id="exercise-cards-target"></div>
 
             <button onclick="saveActiveLog()" style="width:100%; padding:12px; background:#00ff87; color:#000; font-weight:bold; border:none; border-radius:6px; cursor:pointer; margin-top:10px;">

@@ -156,6 +156,13 @@ async function generateWorkout() {
         return;
     }
 
+    // Immediately reveal container with loading state
+    const container = document.getElementById("tracker-container");
+    const target = document.getElementById("exercise-cards-target");
+    container.style.display = "block";
+    target.innerHTML = "<p style='color:#00e5ff; font-weight:bold; padding:20px; text-align:center;'>⏳ Generating your custom workout... (Render server may take up to 30s on cold start)</p>";
+    container.scrollIntoView({ behavior: 'smooth' });
+
     const payload = {
         username: currentUser,
         physique: selectedSelections.physique,
@@ -181,7 +188,7 @@ async function generateWorkout() {
 
     } catch (error) {
         console.error("Workout Generation Error:", error);
-        alert(`Workout Generation Failure: ${error.message}`);
+        target.innerHTML = `<p style='color:#ff4444; font-weight:bold; padding:20px;'>❌ Generation Failed: ${error.message}</p>`;
     }
 }
 
@@ -189,8 +196,10 @@ function renderExerciseCards(exercises) {
     const target = document.getElementById("exercise-cards-target");
     const container = document.getElementById("tracker-container");
 
+    container.style.display = "block";
+
     if (!exercises || exercises.length === 0) {
-        target.innerHTML = "<p style='color:#888;'>No exercises found for these selections.</p>";
+        target.innerHTML = "<p style='color:#888;'>No exercises found for these selections in the database.</p>";
         return;
     }
 
@@ -209,7 +218,6 @@ function renderExerciseCards(exercises) {
     });
 
     target.innerHTML = html;
-    container.style.display = "block";
     container.scrollIntoView({ behavior: 'smooth' });
 }
 
